@@ -79,7 +79,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(RepoRoot)artifacts\obj;$(RepoRoot)src\shared;$(RepoRoot)src\shared\inc;$(RepoRoot)src\shared\pal\prebuilt\inc;$(RepoRoot)src\shared\pal\inc;$(RepoRoot)src\shared\pal\inc\rt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\minipal;$(RepoRoot)artifacts\obj;$(RepoRoot)src\shared;$(RepoRoot)src\shared\inc;$(RepoRoot)src\shared\pal\prebuilt\inc;$(RepoRoot)src\shared\pal\inc;$(RepoRoot)src\shared\pal\inc\rt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /guard:ehcont /Zm200 /Zc:strictStrings /w34092 /w34121 /w34125 /w34130 /w34132 /w34212 /w34530 /w35038 /w44177 /ZH:SHA_256 /source-charset:utf-8 /homeparams</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -137,7 +137,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Checked|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ArtifactsObjDir)\Windows_NT.x64.Debug\src\utilcode;$(RepoRoot)src\utilcode;$(ArtifactsObjDir);$(RepoRoot)src;$(RepoRoot)src\pal\prebuilt\inc;$(RepoRoot)src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\minipal;$(ArtifactsObjDir)\Windows_NT.x64.Debug\src\utilcode;$(RepoRoot)src\utilcode;$(ArtifactsObjDir);$(RepoRoot)src;$(RepoRoot)src\pal\prebuilt\inc;$(RepoRoot)src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /guard:ehcont /Zm200 /Zc:strictStrings /w34092 /w34121 /w34125 /w34130 /w34132 /w34212 /w34530 /w35038 /w44177 /ZH:SHA_256 /source-charset:utf-8</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -189,7 +189,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ArtifactsObjDir)\Windows_NT.x64.Debug\src\utilcode;$(RepoRoot)src\utilcode;$(ArtifactsObjDir);$(RepoRoot)src;$(RepoRoot)src\pal\prebuilt\inc;$(RepoRoot)src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\minipal;$(ArtifactsObjDir)\Windows_NT.x64.Debug\src\utilcode;$(RepoRoot)src\utilcode;$(ArtifactsObjDir);$(RepoRoot)src;$(RepoRoot)src\pal\prebuilt\inc;$(RepoRoot)src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /guard:ehcont /Zm200 /Zc:strictStrings /w34092 /w34121 /w34125 /w34130 /w34132 /w34212 /w34530 /w35038 /w44177 /ZH:SHA_256 /source-charset:utf-8</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -244,7 +244,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ArtifactsObjDir)\Windows_NT.x64.Debug\src\utilcode;$(RepoRoot)src\utilcode;$(ArtifactsObjDir);$(RepoRoot)src;$(RepoRoot)src\pal\prebuilt\inc;$(RepoRoot)src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\minipal;$(ArtifactsObjDir)\Windows_NT.x64.Debug\src\utilcode;$(RepoRoot)src\utilcode;$(ArtifactsObjDir);$(RepoRoot)src;$(RepoRoot)src\pal\prebuilt\inc;$(RepoRoot)src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /guard:ehcont /Zm200 /Zc:strictStrings /w34092 /w34121 /w34125 /w34130 /w34132 /w34212 /w34530 /w35038 /w44177 /ZH:SHA_256 /source-charset:utf-8</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BufferSecurityCheck>true</BufferSecurityCheck>
