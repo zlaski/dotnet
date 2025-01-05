@@ -58,8 +58,8 @@
 #define ANNOTATION_IGNORE_LOCK              __annotation(W("CAN_TAKE_LOCK"), W("CANNOT_TAKE_LOCK"), W("CONDITIONAL_EXEMPT"))
 #define ANNOTATION_IGNORE_FAULT             __annotation(W("FAULT"), W("FORBID_FAULT"), W("CONDITIONAL_EXEMPT"))
 #define ANNOTATION_IGNORE_TRIGGER           __annotation(W("GC_TRIGGERS"), W("GC_NOTRIGGER"), W("CONDITIONAL_EXEMPT"))
-#define ANNOTATION_VIOLATION(violationmask) __annotation(W("VIOLATION(") L#violationmask W(")"))
-#define ANNOTATION_UNCHECKED(thecheck)      __annotation(W("UNCHECKED(") L#thecheck W(")"))
+#define ANNOTATION_VIOLATION(violationmask) __annotation(W("VIOLATION(") W(#violationmask) W(")"))
+#define ANNOTATION_UNCHECKED(thecheck)      __annotation(W("UNCHECKED(") W(#thecheck) W(")"))
 
 #define ANNOTATION_MARK_BLOCK_ANNOTATION    __annotation(W("MARK"))
 #define ANNOTATION_USE_BLOCK_ANNOTATION     __annotation(W("USE"))
@@ -74,7 +74,7 @@
 #define ANNOTATION_SPECIAL_HOLDER_END       __annotation(W("SPECIAL_HOLDER_END"))
 #define ANNOTATION_SPECIAL_HOLDER_CALLER_NEEDS_DYNAMIC_CONTRACT __annotation(W("SPECIAL_HOLDER_DYNAMIC"))
 
-#define ANNOTATION_SO_PROBE_BEGIN(probeAmount) __annotation(W("SO_PROBE_BEGIN(") L#probeAmount W(")"))
+#define ANNOTATION_SO_PROBE_BEGIN(probeAmount) __annotation(W("SO_PROBE_BEGIN(") W(#probeAmount) W(")"))
 #define ANNOTATION_SO_PROBE_END             __annotation(W("SO_PROBE_END"))
 
 //
