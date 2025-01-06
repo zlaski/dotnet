@@ -9,6 +9,7 @@ if /i "%EVENT%" == "PreClean" (
 
 if /i "%EVENT%" == "PreBuildEvent" (
     rem Implement PreBuildEvent
+    call :create_if_needed src\runtime\src\coreclr\pal\src\include\pal\config.h
     exit /b 0
 )
 
@@ -39,3 +40,12 @@ if /i "%EVENT%" == "Test" (
 
 echo ************** INVALID BUILD EVENT: %EVENT% ********************
 exit /b 4
+
+::::::::::::::::::::::::::
+:create_if_needed
+set "F=%~1"
+if not exist "%F%" (
+    echo // %F%  >"%F%"
+    echo #pragma once >>"%F%"
+)
+exit /b 0
