@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <SubSystem>Console</SubSystem>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AKITOOLS)\akibld\akibld.props" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{886484C7-9C4B-43CC-9735-3D5C501D609F}</ProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>NOMINMAX;__ILDASM__;HOST_WINDOWS;TARGET_WINDOWS;_DEFINE_META_DATA_META_CONSTANTS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src\runtime\src\coreclr\inc;src\runtime\src\coreclr\pal\prebuilt\inc;src\runtime\src\coreclr\minipal;src\runtime\src\native;src\runtime\eng\native\version;src\runtime\src\coreclr\pal\src\include;src\runtime\src\coreclr\md\inc;src\runtime\src\coreclr\pal\inc;$(IntDir);$(Install_IncludePath);$(UCRT_IncludePath);$(UM_IncludePath);$(KIT_SHARED_IncludePath)\;$(KM_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Sync</ExceptionHandling>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>HOST_X86;TARGET_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>HOST_AMD64;TARGET_AMD64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\ceeload.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\dasm.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\dasm_formattype.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\dasm_sz.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\dis.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\dman.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\dres.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\windasm.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\inc\corhlpr.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\inc\corhlprpriv.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\classfactory.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\importhelper.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\mdinternalrw.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\metamodelrw.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\rwutil.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\metamodel.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\recordpool.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\staticmd\apis.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\minipal\Windows\dn-u16.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\tools\metainfo\mdinfo.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\tools\metainfo\mdobj.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\clrconfig.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\clrhost.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\collections.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\corimage.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\ex.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\fstring.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\hostimpl.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\longfilepathwrappers.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\namespaceutil.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\prettyprintsig.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\sbuffer.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\sstring.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\stgpool.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\stgpooli.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\stgpoolreadonly.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\stresslog.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\util_nodependencies.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\utsem.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\yieldprocessornormalized.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ildasm-resources.h" />
+    <ClInclude Include="ildasm.h" />
+    <ClInclude Include="src\runtime\src\coreclr\ildasm\ceeload.h" />
+    <ClInclude Include="src\runtime\src\coreclr\inc\clrconfig.h" />
+    <ClInclude Include="src\runtime\src\coreclr\inc\clrversion.h" />
+    <ClInclude Include="src\runtime\src\coreclr\inc\cor.h" />
+    <ClInclude Include="src\runtime\src\coreclr\inc\corpriv.h" />
+    <ClInclude Include="src\runtime\src\coreclr\inc\daccess.h" />
+    <ClInclude Include="src\runtime\src\coreclr\inc\staticcontract.h" />
+    <ClInclude Include="src\runtime\src\coreclr\pal\inc\pal.h" />
+    <ClInclude Include="src\runtime\src\coreclr\pal\inc\pal_error.h" />
+    <ClInclude Include="src\runtime\src\coreclr\pal\inc\pal_mstypes.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="ildasm.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ildasm.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ildasm.akibld.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(AKIROOT)\svn\akisystems\akilib\akilib.vcxproj">
+      <Project>{0A19BC1F-D9EA-4438-BA0D-2E42C97FC45D}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

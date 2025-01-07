@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Build Files">
+      <UniqueIdentifier>{432a9cec-6639-4b30-b248-45af386bcdf3}</UniqueIdentifier>
+      <Extensions>bat;cmd;ps1;sh</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{dbc1b271-b138-4ce3-b60b-ae15bb00d312}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Other Files">
+      <UniqueIdentifier>{2af9edd6-3597-488a-bb81-c5759106b3a8}</UniqueIdentifier>
+      <Extensions>txt;log;doc</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{3d127843-e59a-4913-aa10-3c6603ea4a8c}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;avif;jfif;resx;tiff;tif;png;wav;mfcribbon-ms;h</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{65c2ac86-e266-4e5a-949a-a0ed70e2ca6e}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ildasm.akibld.bat">
+      <Filter>Build Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ildasm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\runtime\src\coreclr\inc\clrversion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\runtime\src\coreclr\inc\cor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\runtime\src\coreclr\inc\staticcontract.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\runtime\src\coreclr\inc\corpriv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\runtime\src\coreclr\inc\daccess.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\runtime\src\coreclr\ildasm\ceeload.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\runtime\src\coreclr\inc\clrconfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\runtime\src\coreclr\pal\inc\pal_mstypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\runtime\src\coreclr\pal\inc\pal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\runtime\src\coreclr\pal\inc\pal_error.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ildasm-resources.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="ildasm.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ildasm.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\windasm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\dis.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\dasm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\dasm_formattype.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\longfilepathwrappers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\util_nodependencies.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\staticmd\apis.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\ceeload.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\tools\metainfo\mdinfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\dres.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\dman.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\sstring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\ex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\inc\corhlpr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\prettyprintsig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\inc\corhlprpriv.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\corimage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\minipal\Windows\dn-u16.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\rwutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\ildasm\dasm_sz.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\tools\metainfo\mdobj.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\sbuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\stresslog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\hostimpl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\collections.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\metamodelrw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\utsem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\classfactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\mdinternalrw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\stgpooli.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\fstring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\namespaceutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\clrhost.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\clrconfig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\stgpoolreadonly.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\stgpool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\metamodel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\recordpool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\importhelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\yieldprocessornormalized.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
