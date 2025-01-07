@@ -15,19 +15,21 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>NOMINMAX;__ILDASM__;HOST_WINDOWS;TARGET_WINDOWS;_DEFINE_META_DATA_META_CONSTANTS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src\runtime\src\coreclr\inc;src\runtime\src\coreclr\pal\prebuilt\inc;src\runtime\src\coreclr\minipal;src\runtime\src\native;src\runtime\eng\native\version;src\runtime\src\coreclr\pal\src\include;src\runtime\src\coreclr\md\inc;src\runtime\src\coreclr\pal\inc;$(IntDir);$(Install_IncludePath);$(UCRT_IncludePath);$(UM_IncludePath);$(KIT_SHARED_IncludePath)\;$(KM_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;__ILDASM__;HOST_WINDOWS;TARGET_WINDOWS;PROFILING_SUPPORTED;FEATURE_COLLECTIBLE_TYPES;DEBUGGING_SUPPORTED;FEATURE_CODE_VERSIONING;FEATURE_READYTORUN;FEATURE_METADATA_INTERNAL_APIS;FEATURE_PERFTRACING;_DEFINE_META_DATA_META_CONSTANTS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src\runtime\src\coreclr\inc;src\runtime\src\coreclr\pal\prebuilt\inc;src\runtime\src\coreclr\minipal;src\runtime\src\native;src\runtime\eng\native\version;src\runtime\src\coreclr\pal\src\include;src\runtime\src\coreclr\md\inc;src\runtime\src\coreclr\pal\inc;$(IntDir);$(Install_IncludePath);$(UCRT_IncludePath);$(UM_IncludePath);$(KIT_SHARED_IncludePath)\;$(KM_IncludePath);src\runtime\src\coreclr\vm;src\runtime\src\coreclr\hosts\inc;src\runtime\src\native\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Platform)'=='Win32'">
     <ClCompile>
       <PreprocessorDefinitions>HOST_X86;TARGET_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src\runtime\src\coreclr\vm\i386;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
     <ClCompile>
       <PreprocessorDefinitions>HOST_AMD64;TARGET_AMD64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src\runtime\src\coreclr\vm\amd64;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -46,6 +48,7 @@
     <ClCompile Include="src\runtime\src\coreclr\md\enc\mdinternalrw.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\enc\metamodelrw.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\enc\rwutil.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\mdcolumndescriptors.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\runtime\metamodel.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\runtime\recordpool.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\staticmd\apis.cpp" />
@@ -61,9 +64,11 @@
     <ClCompile Include="src\runtime\src\coreclr\utilcode\hostimpl.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\longfilepathwrappers.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\namespaceutil.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\posterror.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\prettyprintsig.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\sbuffer.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\sstring.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\sstring_com.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\stgpool.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\stgpooli.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\stgpoolreadonly.cpp" />
@@ -71,12 +76,14 @@
     <ClCompile Include="src\runtime\src\coreclr\utilcode\util_nodependencies.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\utsem.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\yieldprocessornormalized.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\vm\vars.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ildasm-resources.h" />
     <ClInclude Include="ildasm.h" />
     <ClInclude Include="src\runtime\src\coreclr\ildasm\ceeload.h" />
     <ClInclude Include="src\runtime\src\coreclr\inc\clrconfig.h" />
+    <ClInclude Include="src\runtime\src\coreclr\inc\clrhost.h" />
     <ClInclude Include="src\runtime\src\coreclr\inc\clrversion.h" />
     <ClInclude Include="src\runtime\src\coreclr\inc\cor.h" />
     <ClInclude Include="src\runtime\src\coreclr\inc\corpriv.h" />
@@ -85,6 +92,7 @@
     <ClInclude Include="src\runtime\src\coreclr\pal\inc\pal.h" />
     <ClInclude Include="src\runtime\src\coreclr\pal\inc\pal_error.h" />
     <ClInclude Include="src\runtime\src\coreclr\pal\inc\pal_mstypes.h" />
+    <ClInclude Include="src\runtime\src\coreclr\vm\eventpipeadaptertypes.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="ildasm.ico" />

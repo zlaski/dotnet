@@ -61,6 +61,12 @@
     <ClInclude Include="src\runtime\src\coreclr\pal\inc\pal_error.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\runtime\src\coreclr\inc\clrhost.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\runtime\src\coreclr\vm\eventpipeadaptertypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ildasm-resources.h">
@@ -196,6 +202,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\runtime\src\coreclr\utilcode\yieldprocessornormalized.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\posterror.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\mdcolumndescriptors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\vm\vars.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\sstring_com.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

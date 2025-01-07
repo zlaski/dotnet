@@ -849,7 +849,9 @@ class RangeSectionMap
                 TADDR initialValue =
 #endif
                 InterlockedCompareExchangeT(&_ptr, ptr - 1, ptr);
+#ifdef _DEBUG
                 assert(initialValue == ptr || initialValue == (ptr - 1));
+#endif
             }
         }
 

@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <crtdbg.h>
 #include "mdinfo.h"
+#include "utilcode.h"
 
 #ifndef STRING_BUFFER_LEN
 #define STRING_BUFFER_LEN 4096
