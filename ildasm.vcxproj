@@ -15,7 +15,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>NOMINMAX;__ILDASM__;HOST_WINDOWS;TARGET_WINDOWS;PROFILING_SUPPORTED;FEATURE_COLLECTIBLE_TYPES;DEBUGGING_SUPPORTED;FEATURE_CODE_VERSIONING;FEATURE_READYTORUN;FEATURE_METADATA_INTERNAL_APIS;FEATURE_PERFTRACING;_DEFINE_META_DATA_META_CONSTANTS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;__ILDASM__;HOST_WINDOWS;TARGET_WINDOWS;FEATURE_METADATA_IN_VM;SELF_NO_HOST;PROFILING_SUPPORTED;FEATURE_COLLECTIBLE_TYPES;DEBUGGING_SUPPORTED;FEATURE_CODE_VERSIONING;FEATURE_READYTORUN;FEATURE_METADATA_INTERNAL_APIS;FEATURE_PERFTRACING;_DEFINE_META_DATA_META_CONSTANTS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>src\runtime\src\coreclr\inc;src\runtime\src\coreclr\pal\prebuilt\inc;src\runtime\src\coreclr\minipal;src\runtime\src\native;src\runtime\eng\native\version;src\runtime\src\coreclr\pal\src\include;src\runtime\src\coreclr\md\inc;src\runtime\src\coreclr\pal\inc;$(IntDir);$(Install_IncludePath);$(UCRT_IncludePath);$(UM_IncludePath);$(KIT_SHARED_IncludePath)\;$(KM_IncludePath);src\runtime\src\coreclr\vm;src\runtime\src\coreclr\hosts\inc;src\runtime\src\native\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
@@ -43,18 +43,41 @@
     <ClCompile Include="src\runtime\src\coreclr\ildasm\windasm.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\inc\corhlpr.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\inc\corhlprpriv.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\assemblymd.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\compiler\classfactory.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\custattr_import.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\disp.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\helper.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\import.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\compiler\importhelper.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\mdutil.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\regmeta.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\regmeta_imetadatatables.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\regmeta_import.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\regmeta_vm.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\liteweightstgdbrw.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\enc\mdinternalrw.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\metamodelenc.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\enc\metamodelrw.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\peparse.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\enc\rwutil.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\stgio.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\stgtiggerstorage.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\stgtiggerstream.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\liteweightstgdb.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\runtime\mdcolumndescriptors.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\mdfileformat.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\mdinternaldisp.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\mdinternalro.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\runtime\metamodel.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\metamodelro.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\runtime\recordpool.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\md\staticmd\apis.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\minipal\Windows\dn-u16.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\tools\metainfo\mdinfo.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\tools\metainfo\mdobj.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\arraylist.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\ccomprc.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\clrconfig.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\clrhost.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\collections.cpp" />
@@ -64,6 +87,7 @@
     <ClCompile Include="src\runtime\src\coreclr\utilcode\hostimpl.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\longfilepathwrappers.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\namespaceutil.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\pedecoder.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\posterror.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\prettyprintsig.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\sbuffer.cpp" />
@@ -73,10 +97,10 @@
     <ClCompile Include="src\runtime\src\coreclr\utilcode\stgpooli.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\stgpoolreadonly.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\stresslog.cpp" />
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\util.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\util_nodependencies.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\utsem.cpp" />
     <ClCompile Include="src\runtime\src\coreclr\utilcode\yieldprocessornormalized.cpp" />
-    <ClCompile Include="src\runtime\src\coreclr\vm\vars.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ildasm-resources.h" />
@@ -92,7 +116,6 @@
     <ClInclude Include="src\runtime\src\coreclr\pal\inc\pal.h" />
     <ClInclude Include="src\runtime\src\coreclr\pal\inc\pal_error.h" />
     <ClInclude Include="src\runtime\src\coreclr\pal\inc\pal_mstypes.h" />
-    <ClInclude Include="src\runtime\src\coreclr\vm\eventpipeadaptertypes.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="ildasm.ico" />

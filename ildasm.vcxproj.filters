@@ -64,9 +64,6 @@
     <ClInclude Include="src\runtime\src\coreclr\inc\clrhost.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\runtime\src\coreclr\vm\eventpipeadaptertypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ildasm-resources.h">
@@ -210,10 +207,82 @@
     <ClCompile Include="src\runtime\src\coreclr\md\runtime\mdcolumndescriptors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\runtime\src\coreclr\vm\vars.cpp">
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\sstring_com.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\runtime\src\coreclr\utilcode\sstring_com.cpp">
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\metamodelenc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\peparse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\liteweightstgdbrw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\regmeta.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\ccomprc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\regmeta_import.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\import.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\stgtiggerstorage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\pedecoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\arraylist.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\stgio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\regmeta_vm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\regmeta_imetadatatables.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\enc\stgtiggerstream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\custattr_import.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\assemblymd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\mdfileformat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\utilcode\util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\disp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\compiler\mdutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\mdinternaldisp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\mdinternalro.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\metamodelro.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\src\coreclr\md\runtime\liteweightstgdb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
