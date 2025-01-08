@@ -13,6 +13,18 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{886484C7-9C4B-43CC-9735-3D5C501D609F}</ProjectGuid>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>dotnet-$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetName>dotnet-$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>dotnet-$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>dotnet-$(ProjectName)</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>NOMINMAX;__ILDASM__;HOST_WINDOWS;TARGET_WINDOWS;FEATURE_METADATA_IN_VM;SELF_NO_HOST;PROFILING_SUPPORTED;FEATURE_COLLECTIBLE_TYPES;DEBUGGING_SUPPORTED;FEATURE_CODE_VERSIONING;FEATURE_READYTORUN;FEATURE_METADATA_INTERNAL_APIS;FEATURE_PERFTRACING;_DEFINE_META_DATA_META_CONSTANTS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
