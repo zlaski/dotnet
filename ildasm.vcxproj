@@ -13,16 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{886484C7-9C4B-43CC-9735-3D5C501D609F}</ProjectGuid>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>dotnet-$(ProjectName)</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>dotnet-$(ProjectName)</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>dotnet-$(ProjectName)</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <PropertyGroup>
     <TargetName>dotnet-$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>

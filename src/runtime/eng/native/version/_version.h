@@ -1,5 +1,5 @@
 #ifndef VER_COMPANYNAME_STR
-#define VER_COMPANYNAME_STR         ".NET Foundation"
+#define VER_COMPANYNAME_STR         "Microsoft Corporation"
 #endif
 #ifndef VER_FILEDESCRIPTION_STR
 #define VER_FILEDESCRIPTION_STR     ".NET Runtime"
@@ -14,16 +14,16 @@
 #define VER_PRODUCTNAME_STR         ".NET"
 #endif
 #undef VER_PRODUCTVERSION
-#define VER_PRODUCTVERSION          00,00,00,00000
+#define VER_PRODUCTVERSION          10,0,24,63102
 #undef VER_PRODUCTVERSION_STR
-#define VER_PRODUCTVERSION_STR      "0.0.0"
+#define VER_PRODUCTVERSION_STR      "10.0.0-alpha.1.24631.2 @Commit: 86057854b9608445b634f5ad6e0a476c4cfa14f4"
 #undef VER_FILEVERSION
-#define VER_FILEVERSION             00,00,00,00000
+#define VER_FILEVERSION             10,0,24,63102
 #undef VER_FILEVERSION_STR
-#define VER_FILEVERSION_STR         "00,00,00,00000"
+#define VER_FILEVERSION_STR         "10,0,24,63102 @Commit: 86057854b9608445b634f5ad6e0a476c4cfa14f4"
 #ifndef VER_LEGALCOPYRIGHT_STR
-#define VER_LEGALCOPYRIGHT_STR      ".NET Foundation"
+#define VER_LEGALCOPYRIGHT_STR      "\xa9 Microsoft Corporation. All rights reserved."
 #endif
 #ifndef VER_DEBUG
-#define VER_DEBUG                   VS_FF_DEBUG
+#define VER_DEBUG                   0
 #endif

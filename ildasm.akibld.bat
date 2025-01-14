@@ -20,7 +20,7 @@ if /i "%EVENT%" == "PreLinkEvent" (
 
 if /i "%EVENT%" == "PostBuildEvent" (
     rem Implement PostBuildEvent
-    copy /y %Install_RootPath%\bin\*.* %AKIROOT%\svn\akisystems\libPECOFF
+    rem copy /y %Install_RootPath%\bin\*.* %AKIROOT%\svn\akisystems\libPECOFF
     exit /b 0
 )
 

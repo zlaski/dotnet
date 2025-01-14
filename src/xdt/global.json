@@ -1,9 +1,9 @@
 {
   "tools": {
-    "dotnet": "10.0.100-alpha.1.24573.1"
+    "dotnet": "10.0.100-alpha.1.24611.6"
   },
   "sdk": {
-    "version": "10.0.100-alpha.1.24573.1",
+    "version": "10.0.100-alpha.1.24611.6",
     "allowPrerelease": true
   },
   "msbuild-sdks": {
