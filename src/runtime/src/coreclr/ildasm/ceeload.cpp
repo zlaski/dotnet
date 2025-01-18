@@ -86,7 +86,8 @@ BOOL PELoader::open(LPCSTR moduleName)
     newhMod = (HMODULE) MapViewOfFile(m_hMapFile, FILE_MAP_READ, 0, 0, 0);
     if (newhMod == NULL)
         return FALSE;
-   return open(newhMod);
+
+    return open(newhMod);
 }
 
 BOOL PELoader::open(const WCHAR* moduleName)
@@ -115,7 +116,8 @@ BOOL PELoader::open(const WCHAR* moduleName)
     newhMod = (HMODULE) MapViewOfFile(m_hMapFile, FILE_MAP_READ, 0, 0, 0);
     if (newhMod == NULL)
         return FALSE;
-   return open(newhMod);
+
+    return open(newhMod);
 }
 
 

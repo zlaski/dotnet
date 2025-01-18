@@ -4,22 +4,22 @@
     <ShowAllFiles>true</ShowAllFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>/text /all /metadata csharp\hello-world\hello-world.exe</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>/all /metadata csharp\hello-world\hello-world.exe</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(AKIROOT)\svn\akisystems\libPECOFF</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>/text /all /metadata csharp\hello-world\hello-world.exe</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>/all /metadata csharp\hello-world\hello-world.exe</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(AKIROOT)\svn\akisystems\libPECOFF</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>/text /all /metadata csharp\hello-world\hello-world.exe</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>/all /metadata csharp\hello-world\hello-world.exe</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(AKIROOT)\svn\akisystems\libPECOFF</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>/text /all /metadata csharp\hello-world\hello-world.exe</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>/all /metadata csharp\hello-world\hello-world.exe</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(AKIROOT)\svn\akisystems\libPECOFF</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>

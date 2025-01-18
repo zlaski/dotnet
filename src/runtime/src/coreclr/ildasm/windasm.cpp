@@ -309,6 +309,8 @@ int ProcessOneArg(_In_ __nullterminated char* szArg, _Out_ char** ppszObjFileNam
         }
         else if (_stricmp(szOpt, "all") == 0)
         {
+            g_fDecompile = TRUE;
+            g_fDumpTypeList = TRUE;
             g_fDumpStats = g_fTDC;
             g_fDumpHeader = TRUE;
             g_fShowBytes = TRUE;

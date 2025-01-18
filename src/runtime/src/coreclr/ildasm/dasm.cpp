@@ -7429,7 +7429,7 @@ BOOL DumpFile()
     MultiByteToWideChar(CP_UTF8,0,pszFilename,-1,wzInputFileName,MAX_FILENAME_LENGTH);
     memset(szFilenameANSI,0,MAX_FILENAME_LENGTH*3);
     WideCharToMultiByte(g_uConsoleCP,0,wzInputFileName,-1,szFilenameANSI,MAX_FILENAME_LENGTH*3,NULL,NULL);
-        fSuccess = g_pPELoader->open(wzInputFileName);
+    fSuccess = g_pPELoader->open(wzInputFileName);
 
     if (fSuccess == FALSE)
     {
