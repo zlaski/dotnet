@@ -3571,7 +3571,7 @@ const char *MDInfo::DumpRawNameOfType(ULONG iType)
     // Is the field a coded token?
     if (iType <= iCodedTokenMax)
     {
-        int iCdTkn = iType - iCodedToken;
+        int iCdTkn = iType - iCodedTokenMin;
         const char *pNameCdTkn;
         m_pTables->GetCodedTokenInfo(iCdTkn, 0,0, &pNameCdTkn);
         return pNameCdTkn;
@@ -3624,7 +3624,7 @@ void MDInfo::DumpRawCol(ULONG ixTbl, ULONG ixCol, ULONG rid, bool bStats)
     // Is the field a coded token?
     if (ulType <= iCodedTokenMax)
     {
-        int iCdTkn = ulType - iCodedToken;
+        int iCdTkn = ulType - iCodedTokenMin;
         const char *pNameCdTkn;
         m_pTables->GetCodedTokenInfo(iCdTkn, 0,0, &pNameCdTkn);
         VWrite("%s[%08x]", pNameCdTkn, ulVal);

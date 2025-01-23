@@ -1538,7 +1538,7 @@ DECLARE_INTERFACE_(IMetaDataTables2, IMetaDataTables)
 #ifndef _META_DATA_META_CONSTANTS_DEFINED
 #define _META_DATA_META_CONSTANTS_DEFINED
 const unsigned int iRidMax          = 63;
-const unsigned int iCodedToken      = 64;   // base of coded tokens.
+const unsigned int iCodedTokenMin   = 64;   // base of coded tokens.
 const unsigned int iCodedTokenMax   = 95;
 const unsigned int iSHORT           = 96;   // fixed types.
 const unsigned int iUSHORT          = 97;
@@ -1550,7 +1550,7 @@ const unsigned int iGUID            = 102;
 const unsigned int iBLOB            = 103;
 
 inline int IsRidType(ULONG ix) { return ix <= iRidMax; }
-inline int IsCodedTokenType(ULONG ix) { return (ix >= iCodedToken) && (ix <= iCodedTokenMax); }
+inline int IsCodedTokenType(ULONG ix) { return (ix >= iCodedTokenMin) && (ix <= iCodedTokenMax); }
 inline int IsRidOrToken(ULONG ix) { return ix <= iCodedTokenMax; }
 inline int IsHeapType(ULONG ix) { return ix >= iSTRING; }
 inline int IsFixedType(ULONG ix) { return (ix < iSTRING) && (ix > iCodedTokenMax); }

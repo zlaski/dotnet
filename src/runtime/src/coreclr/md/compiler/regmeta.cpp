@@ -873,7 +873,7 @@ const char *DumpMD_DumpRawNameOfType(RegMeta *pMD, ULONG iType)
     // Is the field a coded token?
     if (iType <= iCodedTokenMax)
     {
-        int iCdTkn = iType - iCodedToken;
+        int iCdTkn = iType - iCodedTokenMin;
         const char *pNameCdTkn;
         pMD->GetCodedTokenInfo(iCdTkn, 0,0, &pNameCdTkn);
         return pNameCdTkn;
@@ -926,7 +926,7 @@ void DumpMD_DumpRawCol(RegMeta *pMD, ULONG ixTbl, ULONG ixCol, ULONG rid, bool b
     // Is the field a coded token?
     if (ulType <= iCodedTokenMax)
     {
-        int iCdTkn = ulType - iCodedToken;
+        int iCdTkn = ulType - iCodedTokenMin;
         const char *pNameCdTkn;
         pMD->GetCodedTokenInfo(iCdTkn, 0,0, &pNameCdTkn);
         DumpMD_VWrite("%s[%08x]", pNameCdTkn, ulVal);

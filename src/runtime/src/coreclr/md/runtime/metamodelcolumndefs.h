@@ -47,7 +47,6 @@
     //-------------------------------------------------------------------------
     //FieldPtr
     SCHEMA_TABLE_START(FieldPtr)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_RID(FieldPtr, Field, Field)
     SCHEMA_TABLE_END(FieldPtr)
 
@@ -62,7 +61,6 @@
     //-------------------------------------------------------------------------
     //MethodPtr
     SCHEMA_TABLE_START(MethodPtr)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_RID(MethodPtr, Method, Method)
     SCHEMA_TABLE_END(MethodPtr)
 
@@ -80,7 +78,6 @@
     //-------------------------------------------------------------------------
     //ParamPtr
     SCHEMA_TABLE_START(ParamPtr)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_RID(ParamPtr, Param, Param)
     SCHEMA_TABLE_END(ParamPtr)
 
@@ -102,7 +99,6 @@
     //-------------------------------------------------------------------------
     //MemberRef
     SCHEMA_TABLE_START(MemberRef)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_CDTKN(MemberRef,Class,MemberRefParent)
     SCHEMA_ITEM_STRING(MemberRef,Name)
     SCHEMA_ITEM_BLOB(MemberRef,Signature)
@@ -119,7 +115,6 @@
     //-------------------------------------------------------------------------
     //CustomAttribute
     SCHEMA_TABLE_START(CustomAttribute)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_CDTKN(CustomAttribute,Parent,HasCustomAttribute)
     SCHEMA_ITEM_CDTKN(CustomAttribute,Type,CustomAttributeType)
     SCHEMA_ITEM_BLOB(CustomAttribute,Value)
@@ -128,7 +123,6 @@
     //-------------------------------------------------------------------------
     //FieldMarshal
     SCHEMA_TABLE_START(FieldMarshal)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_CDTKN(FieldMarshal,Parent,HasFieldMarshal)
     SCHEMA_ITEM_BLOB(FieldMarshal,NativeType)
     SCHEMA_TABLE_END(FieldMarshal)
@@ -159,14 +153,12 @@
     //-------------------------------------------------------------------------
     //StandAloneSig
     SCHEMA_TABLE_START(StandAloneSig)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_BLOB(StandAloneSig,Signature)
     SCHEMA_TABLE_END(StandAloneSig)
 
     //-------------------------------------------------------------------------
     //EventMap
     SCHEMA_TABLE_START(EventMap)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_RID(EventMap,Parent,TypeDef)
     SCHEMA_ITEM_RID(EventMap,EventList,Event)
     SCHEMA_TABLE_END(EventMap)
@@ -174,7 +166,6 @@
     //-------------------------------------------------------------------------
     //EventPtr
     SCHEMA_TABLE_START(EventPtr)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_RID(EventPtr, Event, Event)
     SCHEMA_TABLE_END(EventPtr)
 
@@ -189,7 +180,6 @@
     //-------------------------------------------------------------------------
     //PropertyMap
     SCHEMA_TABLE_START(PropertyMap)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_RID(PropertyMap,Parent,TypeDef)
     SCHEMA_ITEM_RID(PropertyMap,PropertyList,Property)
     SCHEMA_TABLE_END(PropertyMap)
@@ -197,7 +187,6 @@
     //-------------------------------------------------------------------------
     //PropertyPtr
     SCHEMA_TABLE_START(PropertyPtr)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_RID(PropertyPtr, Property, Property)
     SCHEMA_TABLE_END(PropertyPtr)
 
@@ -228,14 +217,12 @@
     //-------------------------------------------------------------------------
     //ModuleRef
     SCHEMA_TABLE_START(ModuleRef)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_STRING(ModuleRef, Name)
     SCHEMA_TABLE_END(ModuleRef)
 
     //-------------------------------------------------------------------------
     // TypeSpec
     SCHEMA_TABLE_START(TypeSpec)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_BLOB(TypeSpec,Signature)
     SCHEMA_TABLE_END(TypeSpec)
 
@@ -385,7 +372,6 @@
     //-------------------------------------------------------------------------
     //MethodSpec
     SCHEMA_TABLE_START(MethodSpec)
-    SCHEMA_ITEM_NOFIXED()
     SCHEMA_ITEM_CDTKN(MethodSpec, Method, MethodDefOrRef)
     SCHEMA_ITEM_BLOB(MethodSpec, Instantiation)
     SCHEMA_TABLE_END(MethodSpec)

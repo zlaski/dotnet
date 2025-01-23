@@ -4094,7 +4094,7 @@ mdToken CMiniMdRW::GetToken(
     else // Is it a coded token?
     if (pColDef->m_Type <= iCodedTokenMax)
     {
-        ULONG indexCodedToken = pColDef->m_Type - iCodedToken;
+        ULONG indexCodedToken = pColDef->m_Type - iCodedTokenMin;
         if (indexCodedToken < ARRAY_SIZE(g_CodedTokens))
         {
             const CCodedTokenDef *pCdTkn = &g_CodedTokens[indexCodedToken];
@@ -4377,7 +4377,7 @@ CMiniMdRW::PutToken(    // S_OK or E_UNEXPECTED.
     else // Is it a coded token?
     if (ColDef.m_Type <= iCodedTokenMax)
     {
-        ULONG indexCodedToken = ColDef.m_Type - iCodedToken;
+        ULONG indexCodedToken = ColDef.m_Type - iCodedTokenMin;
         if (indexCodedToken < ARRAY_SIZE(g_CodedTokens))
         {
             const CCodedTokenDef *pCdTkn = &g_CodedTokens[indexCodedToken];

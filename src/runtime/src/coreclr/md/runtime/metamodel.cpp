@@ -21,7 +21,6 @@
 //-----------------------------------------------------------------------------
 // Column type, offset, size.
 #define SCHEMA_TABLE_START(tbl) static CMiniColDef r##tbl##Cols[] = {
-#define SCHEMA_ITEM_NOFIXED()
 #define SCHEMA_ITEM_ENTRY(col,typ) {typ, 0,0},
 #define SCHEMA_ITEM_ENTRY2(col,typ,ofs,siz) {typ, ofs, siz},
 #define SCHEMA_ITEM(tbl,typ,col) SCHEMA_ITEM_ENTRY2(col, i##typ, offsetof(tbl##Rec,m_##col), sizeof(((tbl##Rec*)(0))->m_##col))
@@ -29,13 +28,12 @@
 #define SCHEMA_ITEM_STRING(tbl,col) SCHEMA_ITEM_ENTRY(col,iSTRING)
 #define SCHEMA_ITEM_GUID(tbl,col) SCHEMA_ITEM_ENTRY(col,iGUID)
 #define SCHEMA_ITEM_BLOB(tbl,col) SCHEMA_ITEM_ENTRY(col,iBLOB)
-#define SCHEMA_ITEM_CDTKN(tbl,col,tkns) SCHEMA_ITEM_ENTRY(col,iCodedToken+(CDTKN_##tkns))
+#define SCHEMA_ITEM_CDTKN(tbl,col,tkns) SCHEMA_ITEM_ENTRY(col,iCodedTokenMin+(CDTKN_##tkns))
 #define SCHEMA_TABLE_END(tbl) };
 //-----------------------------------------------------------------------------
 #include "metamodelcolumndefs.h"
 //-----------------------------------------------------------------------------
 #undef SCHEMA_TABLE_START
-#undef SCHEMA_ITEM_NOFIXED
 #undef SCHEMA_ITEM_ENTRY
 #undef SCHEMA_ITEM_ENTRY2
 #undef SCHEMA_ITEM
@@ -50,7 +48,6 @@
 //-----------------------------------------------------------------------------
 // Column names.
 #define SCHEMA_TABLE_START(tbl) static const char *r##tbl##ColNames[] = {
-#define SCHEMA_ITEM_NOFIXED()
 #define SCHEMA_ITEM_ENTRY(col,typ) #col,
 #define SCHEMA_ITEM_ENTRY2(col,typ,ofs,siz) #col,
 #define SCHEMA_ITEM(tbl,typ,col) SCHEMA_ITEM_ENTRY2(col, i##typ, offsetof(tbl##Rec,m_##col), sizeof(((tbl##Rec*)(0))->m_##col))
@@ -58,13 +55,12 @@
 #define SCHEMA_ITEM_STRING(tbl,col) SCHEMA_ITEM_ENTRY(col,iSTRING)
 #define SCHEMA_ITEM_GUID(tbl,col) SCHEMA_ITEM_ENTRY(col,iGUID)
 #define SCHEMA_ITEM_BLOB(tbl,col) SCHEMA_ITEM_ENTRY(col,iBLOB)
-#define SCHEMA_ITEM_CDTKN(tbl,col,tkns) SCHEMA_ITEM_ENTRY(col,iCodedToken+(CDTKN_##tkns))
+#define SCHEMA_ITEM_CDTKN(tbl,col,tkns) SCHEMA_ITEM_ENTRY(col,iCodedTokenMin+(CDTKN_##tkns))
 #define SCHEMA_TABLE_END(tbl) };
 //-----------------------------------------------------------------------------
 #include "metamodelcolumndefs.h"
 //-----------------------------------------------------------------------------
 #undef SCHEMA_TABLE_START
-#undef SCHEMA_ITEM_NOFIXED
 #undef SCHEMA_ITEM_ENTRY
 #undef SCHEMA_ITEM_ENTRY2
 #undef SCHEMA_ITEM
@@ -733,7 +729,7 @@ CMiniMdBase::InitColsForTable(
 
     iOffset = 0;
 
-        pTemplate = GetTableDefTemplate(ixTbl);
+    pTemplate = GetTableDefTemplate(ixTbl);
 
     PREFIX_ASSUME(pTemplate->m_pColDefs != NULL);
 
@@ -752,7 +748,7 @@ CMiniMdBase::InitColsForTable(
         // Is the field a coded token?
         if (pCols[ixCol].m_Type <= iCodedTokenMax)
         {
-            ULONG iCdTkn = pCols[ixCol].m_Type - iCodedToken;
+            ULONG iCdTkn = pCols[ixCol].m_Type - iCodedTokenMin;
             ULONG cRecs = 0;
 
             _ASSERTE(iCdTkn < ARRAY_SIZE(g_CodedTokens));
