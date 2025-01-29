@@ -343,7 +343,7 @@ HRESULT RegMeta::OpenExistingMD(
         IfNullGo( m_pStgdb = new (nothrow) CLiteWeightStgdbRW );
     }
 
-    IfFailGo( m_pStgdb->OpenForRead(
+    IfFailGo(m_pStgdb->OpenForRead(
         szDatabase,
         pbData,
         cbData,
