@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -13,7 +13,7 @@ using MS.Win32;
 
 namespace MS.Internal.AutomationProxies
 {
-    class WindowsStatusBar : ProxyHwnd, IGridProvider, IRawElementProviderHwndOverride
+    internal class WindowsStatusBar : ProxyHwnd, IGridProvider, IRawElementProviderHwndOverride
     {
         // ------------------------------------------------------
         //
@@ -236,7 +236,7 @@ namespace MS.Internal.AutomationProxies
                 if (Misc.PtInRect(ref rc, x, y))
                 {
                     ProxySimple grip = StatusBarGrip.Create(_hwnd, this, -1);
-                    return (ProxySimple)(grip != null ? grip : this);
+                    return (ProxySimple)(grip ?? this);
                 }
             }
             return this;
@@ -253,12 +253,12 @@ namespace MS.Internal.AutomationProxies
             // NOTE: Status bar has only 1 row
             if (row != 0)
             {
-                throw new ArgumentOutOfRangeException("row", row, SR.GridRowOutOfRange);
+                throw new ArgumentOutOfRangeException(nameof(row), row, SR.GridRowOutOfRange);
             }
 
             if (column < 0 || column >= Count)
             {
-                throw new ArgumentOutOfRangeException("column", column, SR.GridColumnOutOfRange);
+                throw new ArgumentOutOfRangeException(nameof(column), column, SR.GridColumnOutOfRange);
             }
 
             return CreateStatusBarPane(column);
@@ -345,9 +345,10 @@ namespace MS.Internal.AutomationProxies
 
         unsafe static private IntPtr GetChildHwnd(IntPtr hwnd, Rect rc)
         {
-            UnsafeNativeMethods.ENUMCHILDWINDOWFROMRECT info = new UnsafeNativeMethods.ENUMCHILDWINDOWFROMRECT();
-
-            info.hwnd = IntPtr.Zero;
+            UnsafeNativeMethods.ENUMCHILDWINDOWFROMRECT info = new UnsafeNativeMethods.ENUMCHILDWINDOWFROMRECT
+            {
+                hwnd = IntPtr.Zero
+            };
             info.rc.left = (int)rc.Left;
             info.rc.top = (int)rc.Top;
             info.rc.right = (int)rc.Right;
@@ -406,7 +407,7 @@ namespace MS.Internal.AutomationProxies
 
         #region WindowsStatusBarPane 
 
-        class WindowsStatusBarPane : ProxySimple, IGridItemProvider, IValueProvider
+        private class WindowsStatusBarPane : ProxySimple, IGridItemProvider, IValueProvider
         {
 
             // ------------------------------------------------------
@@ -632,7 +633,7 @@ namespace MS.Internal.AutomationProxies
 
         #region WindowsStatusBarPaneChildOverrideProxy
 
-        class WindowsStatusBarPaneChildOverrideProxy : ProxyHwnd, IGridItemProvider
+        private class WindowsStatusBarPaneChildOverrideProxy : ProxyHwnd, IGridItemProvider
         {
             // ------------------------------------------------------
             //
@@ -738,7 +739,7 @@ namespace MS.Internal.AutomationProxies
 
         #region StatusBarGrip
 
-        class StatusBarGrip: ProxyFragment
+        private class StatusBarGrip: ProxyFragment
         {
             // ------------------------------------------------------
             //

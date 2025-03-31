@@ -77,17 +77,28 @@ namespace ScenarioTests
                 DefaultValueFactory = (_) => RuntimeInformation.RuntimeIdentifier
             };
 
+            CliOption<string> portableRidOption = new("--portable-rid")
+            {
+                Description = "Portable rid for tests requiring one (e.g. self-contained publish)."
+            };
+
+            CliOption<string> binlogDirOption = new("--binlog-dir")
+            {
+                Description = "Directory to store binlogs in. If omitted, binlogs are stored in the generated projecgt directory."
+            };
+
             rootCommand.Options.Add(dotnetRootOption);
             rootCommand.Options.Add(testRootOption);
             rootCommand.Options.Add(sdkVersionOption);
+            rootCommand.Options.Add(targetRidOption);
+            rootCommand.Options.Add(portableRidOption);
+            rootCommand.Options.Add(binlogDirOption);
             rootCommand.Options.Add(listTestsOption);
             rootCommand.Options.Add(offlineOnlyOption);
             rootCommand.Options.Add(noTraitsOption);
             rootCommand.Options.Add(traitsOption);
             rootCommand.Options.Add(xmlResultsPathOption);
             rootCommand.Options.Add(noCleanTestRoot);
-            rootCommand.Options.Add(targetRidOption);
-
 
             rootCommand.SetAction((ParseResult parseResult) =>
             {
@@ -95,6 +106,8 @@ namespace ScenarioTests
                        parseResult.GetValue(testRootOption)!,
                        parseResult.GetValue(sdkVersionOption),
                        parseResult.GetValue(targetRidOption)!,
+                       parseResult.GetValue(portableRidOption),
+                       parseResult.GetValue(binlogDirOption),
                        parseResult.GetValue(listTestsOption),
                        parseResult.GetValue(offlineOnlyOption),
                        parseResult.GetValue(noTraitsOption) ?? (IList<string>)ImmutableList<string>.Empty,
@@ -110,6 +123,8 @@ namespace ScenarioTests
                                  string testRoot,
                                  string? sdkVersion,
                                  string targetRid,
+                                 string? portableRid,
+                                 string? binlogDir,
                                  bool listOnly,
                                  bool offlineOnly,
                                  IList<string> noTraits,
@@ -168,8 +183,20 @@ namespace ScenarioTests
             Console.WriteLine($"  Dotnet Root: {dotnetRoot}");
             Console.WriteLine($"  Test root: {testRoot}");
             Console.WriteLine($"  Target RID: {targetRid}");
+            Console.WriteLine($"  Portable RID: {portableRid}");
             Console.WriteLine($"  Sdk Version: {sdkVersion ?? "latest"}");
             Console.WriteLine($"  Platform: {platform}");
+
+            string? restoreConfigFile = Environment.GetEnvironmentVariable("RestoreConfigFile");
+            if (!string.IsNullOrWhiteSpace(restoreConfigFile))
+            {
+                Console.WriteLine($"  RestoreConfigFile: {restoreConfigFile}");
+            }
+
+            if (binlogDir is not null)
+            {
+                Console.WriteLine($"  Binlog Directory: {binlogDir}");
+            }
 
             if (listOnly)
             {
@@ -186,7 +213,7 @@ namespace ScenarioTests
                 return 0;
             }
 
-            SetupTestEnvironment(dotnetRoot, testRoot, sdkVersion, targetRid);
+            SetupTestEnvironment(dotnetRoot, testRoot, sdkVersion, targetRid, portableRid, binlogDir);
 
             var executor = xunitTestFx.CreateExecutor(asmName);
             executor.RunTests(filteredTestCases, resultsSink, TestFrameworkOptions.ForExecution(assemblyConfig));
@@ -207,7 +234,7 @@ namespace ScenarioTests
             return failed ? 1 : 0;
         }
 
-        private static void SetupTestEnvironment(string dotnetRoot, string testRoot, string? sdkVersion, string targetRid)
+        private static void SetupTestEnvironment(string dotnetRoot, string testRoot, string? sdkVersion, string targetRid, string? portableRid, string? binlogDir)
         {
             // Verify that the input parameters 
             // Create any directories as necessary
@@ -218,8 +245,9 @@ namespace ScenarioTests
             Environment.SetEnvironmentVariable(ScenarioTestFixture.TestRootEnvironmentVariable, testRoot);
             Environment.SetEnvironmentVariable(ScenarioTestFixture.SdkVersionEnvironmentVariable, sdkVersion);
             Environment.SetEnvironmentVariable(ScenarioTestFixture.TargetRidEnvironmentVariable, targetRid);
+            Environment.SetEnvironmentVariable(ScenarioTestFixture.PortableRidEnvironmentVariable, portableRid);
+            Environment.SetEnvironmentVariable(ScenarioTestFixture.BinlogDirEnvironmentVariable, binlogDir);
         }
-
 
         private static XunitFilters CreateFilters(IList<string> excludedTraits, IList<string> includedTraits, bool offlineOnly, OSPlatform platform, string dotnetRoot, string targetRid)
         {

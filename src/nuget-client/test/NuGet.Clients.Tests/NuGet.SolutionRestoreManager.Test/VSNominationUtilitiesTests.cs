@@ -39,6 +39,57 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        public void GetRestoreAuditProperties_MultiTargetingHasDifferentModeValues_ReturnsAuditModeAllWhenDefined()
+        {
+            // Arrange
+            var targetFrameworks = new VsTargetFrameworkInfo4[]
+            {
+                new VsTargetFrameworkInfo4(
+                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
+                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        [ProjectBuildProperties.NuGetAuditMode] = "direct"
+                    }),
+                new VsTargetFrameworkInfo4(
+                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
+                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        [ProjectBuildProperties.NuGetAuditMode] = "all"
+                    }),
+            };
+
+            // Act
+            var actual = VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks);
+
+            // Assert
+            actual.AuditMode.Should().Be("all");
+        }
+
+        [Fact]
+        public void GetRestoreAuditProperties_MultiTargetingHasDifferentModeValues_ThrowsWhenValuesAreDifferentAndNoneAreAll()
+        {
+            // Arrange
+            var targetFrameworks = new VsTargetFrameworkInfo4[]
+            {
+                new VsTargetFrameworkInfo4(
+                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
+                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        [ProjectBuildProperties.NuGetAuditMode] = "one"
+                    }),
+                new VsTargetFrameworkInfo4(
+                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
+                    properties: new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        [ProjectBuildProperties.NuGetAuditMode] = "two"
+                    }),
+            };
+
+            // Act && Assert
+            Assert.Throws<InvalidOperationException>(() => VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks));
+        }
+
+        [Fact]
         public void GetRestoreAuditProperties_WithEmptySuppressionsList_ReturnsNull()
         {
             // Arrange
@@ -257,8 +308,6 @@ namespace NuGet.SolutionRestoreManager.Test
 
         private VsTargetFrameworkInfo4[] TargetFrameworkWithSdkAnalysisLevel(string sdkAnalysisLevel)
         {
-            Dictionary<string, string> keyValuePairs = new Dictionary<string, string>();
-            keyValuePairs["SdkAnalysisLevel"] = sdkAnalysisLevel;
             var targetFrameworks = new VsTargetFrameworkInfo4[]
             {
                 new VsTargetFrameworkInfo4(
@@ -266,6 +315,21 @@ namespace NuGet.SolutionRestoreManager.Test
                     properties: new Dictionary<string, string>
                     {
                         { ProjectBuildProperties.SdkAnalysisLevel, sdkAnalysisLevel }
+                    })
+            };
+
+            return targetFrameworks;
+        }
+
+        private VsTargetFrameworkInfo4[] TargetFrameworkWithSdkVersion(string sdkAnalysisLevel)
+        {
+            var targetFrameworks = new VsTargetFrameworkInfo4[]
+            {
+                new VsTargetFrameworkInfo4(
+                    items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase),
+                    properties: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "NETCoreSdkVersion", sdkAnalysisLevel }
                     })
             };
 
@@ -485,6 +549,22 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Assert
             Assert.Equal(0, result.Length);
+        }
+
+        [Theory]
+        [InlineData("9.0.100", "9.0.100")]
+        [InlineData("Not a version", null)]
+        public void GetSdkVersion_WithVariousInputs(string sdkVersion, string expectedSdkVersion)
+        {
+            // Arrange
+            var targetFrameworks = TargetFrameworkWithSdkVersion(sdkVersion);
+            NuGetVersion expected = expectedSdkVersion != null ? new NuGetVersion(expectedSdkVersion) : null;
+
+            //Act
+            NuGetVersion actual = VSNominationUtilities.GetSdkVersion(targetFrameworks);
+
+            //Assert
+            Assert.Equal(expected, actual);
         }
     }
 }

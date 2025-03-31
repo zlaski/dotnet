@@ -184,6 +184,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal sealed override bool IsRecordStruct => false;
         internal sealed override bool HasPossibleWellKnownCloneMethod() => false;
 
+        internal sealed override ParameterSymbol? ExtensionParameter => null;
+
         internal override bool Equals(TypeSymbol? other, TypeCompareKind comparison)
         {
             if (other is null)
@@ -204,6 +206,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
         public override int GetHashCode() => _underlyingType.GetHashCode();
+
+        internal override bool HasCompilerLoweringPreserveAttribute => false;
 
 #if !DEBUG
         void Cci.IReference.Dispatch(Cci.MetadataVisitor visitor)

@@ -33,12 +33,27 @@ internal abstract class LanguageServerFeatureOptions
 
     public abstract bool UseRazorCohostServer { get; }
 
-    public abstract bool DisableRazorLanguageServer { get; }
-
     /// <summary>
     /// When enabled, design time code will not be generated. All tooling, except formatting, will be using runtime code generation.
     /// </summary>
     public abstract bool ForceRuntimeCodeGeneration { get; }
 
-    public abstract bool UseRoslynTokenizer { get; }
+    public abstract bool UseNewFormattingEngine { get; }
+
+    /// <summary>
+    /// Indicates that client supports soft selection in completion list, meaning that typing a commit 
+    /// character with a soft-selected item will not commit that item.
+    /// </summary>
+    public abstract bool SupportsSoftSelectionInCompletion { get; }
+
+    /// <summary>
+    /// Indicates that VSCode-compatible completion trigger character set should be used
+    /// </summary>
+    public abstract bool UseVsCodeCompletionTriggerCharacters { get; }
+
+    /// <summary>
+    /// Indicates whether the language server's miscellanous files project will be initialized with
+    /// all Razor files found under the workspace root path.
+    /// </summary>
+    public abstract bool DoNotInitializeMiscFilesProjectFromWorkspace { get; }
 }

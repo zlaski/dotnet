@@ -263,12 +263,12 @@ namespace NuGet.XPlat.FuncTest
 
         // Assert Helper Methods
 
-        public static bool ValidateReference(XElement root, string packageId, string version, PackageType packageType = null, bool developmentDependency = false)
+        public static bool ValidateReference(XElement root, string packageId, string version, PackageType packageType = null, bool developmentDependency = false, StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
         {
 
             var packageReferences = root
                     .Descendants(GetReferenceType(packageType))
-                    .Where(d => d.FirstAttribute.Value.Equals(packageId, StringComparison.OrdinalIgnoreCase));
+                    .Where(d => d.FirstAttribute.Value.Equals(packageId, stringComparison));
 
             if (packageReferences.Count() != 1)
             {
@@ -280,7 +280,7 @@ namespace NuGet.XPlat.FuncTest
                 .Attribute("Version");
 
             if (versionAttribute == null ||
-                !versionAttribute.Value.Equals(version, StringComparison.OrdinalIgnoreCase))
+                !versionAttribute.Value.Equals(version, stringComparison))
             {
                 return false;
             }
@@ -298,7 +298,7 @@ namespace NuGet.XPlat.FuncTest
                 var includeAssets = packageReferences.First().Element("IncludeAssets");
 
                 if (includeAssets == null ||
-                    !includeAssets.Value.Equals("runtime; build; native; contentfiles; analyzers; buildtransitive", StringComparison.OrdinalIgnoreCase))
+                    !includeAssets.Value.Equals("runtime; build; native; contentfiles; analyzers; buildtransitive", stringComparison))
                 {
                     return false;
                 }
@@ -330,11 +330,10 @@ namespace NuGet.XPlat.FuncTest
         {
             var itemGroups = root.Descendants("ItemGroup");
             return itemGroups
-                    .Where(i => i.Descendants(GetReferenceType(packageType)).Any() &&
-                                i.FirstAttribute != null &&
-                                i.FirstAttribute.Name.LocalName.Equals("Condition", StringComparison.OrdinalIgnoreCase) &&
-                                i.FirstAttribute.Value.Trim().Equals(GetTargetFrameworkCondition(framework), StringComparison.OrdinalIgnoreCase))
-                     .First();
+                .First(i => i.Descendants(GetReferenceType(packageType)).Any() &&
+                            i.FirstAttribute != null &&
+                            i.FirstAttribute.Name.LocalName.Equals("Condition", StringComparison.OrdinalIgnoreCase) &&
+                            i.FirstAttribute.Value.Trim().Equals(GetTargetFrameworkCondition(framework), StringComparison.OrdinalIgnoreCase));
         }
 
         public static XElement GetItemGroupForAllFrameworks(XElement root, PackageType packageType = null)
@@ -345,10 +344,10 @@ namespace NuGet.XPlat.FuncTest
             {
                 var x = i.Descendants(referenceType);
             }
+
             return itemGroups
-                    .Where(i => i.Descendants(referenceType).Any() &&
-                                i.FirstAttribute == null)
-                     .First();
+                .First(i => i.Descendants(referenceType).Any() &&
+                            i.FirstAttribute == null);
         }
 
         public static bool ValidateTwoReferences(XElement root, SimpleTestPackageContext packageX, SimpleTestPackageContext packageY)

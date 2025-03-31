@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Help;
+using System.CommandLine.Parsing;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace NuGet.CommandLine.XPlat.Commands.Why
@@ -35,7 +37,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             Register(rootCommand, CommandOutputLogger.Create, WhyCommandRunner.ExecuteCommand);
         }
 
-        internal static void Register(CliCommand rootCommand, Func<ILoggerWithColor> getLogger, Func<WhyCommandArgs, int> action)
+        internal static void Register(CliCommand rootCommand, Func<ILoggerWithColor> getLogger, Func<WhyCommandArgs, Task<int>> action)
         {
             var whyCommand = new DocumentedCommand("why", Strings.WhyCommand_Description, "https://aka.ms/dotnet/nuget/why");
 
@@ -49,7 +51,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 Arity = ArgumentArity.ZeroOrMore,
                 CustomParser = ar =>
                 {
-                    if (ar.Tokens.Count > 1)
+                    if (HasPathArgument(ar))
                     {
                         var value = ar.Tokens[0];
                         ar.OnlyTake(1);
@@ -59,6 +61,18 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                     ar.OnlyTake(0);
                     var currentDirectory = Directory.GetCurrentDirectory();
                     return currentDirectory;
+
+                    bool HasPathArgument(ArgumentResult ar)
+                    {
+                        // If there's only one argument, it could be the path, or the package.
+                        if (ar.Tokens.Count == 1)
+                        {
+                            var value = ar.Tokens[0].Value;
+                            return File.Exists(value) || Directory.Exists(value);
+                        }
+
+                        return ar.Tokens.Count > 1;
+                    }
                 }
             };
 
@@ -84,7 +98,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             whyCommand.Options.Add(frameworks);
             whyCommand.Options.Add(help);
 
-            whyCommand.SetAction((parseResult) =>
+            whyCommand.SetAction(async (parseResult, cancellationToken) =>
             {
                 ILoggerWithColor logger = getLogger();
 
@@ -94,9 +108,10 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                         parseResult.GetValue(path),
                         parseResult.GetValue(package),
                         parseResult.GetValue(frameworks),
-                        logger);
+                        logger,
+                        cancellationToken);
 
-                    int exitCode = action(whyCommandArgs);
+                    int exitCode = await action(whyCommandArgs);
                     return exitCode;
                 }
                 catch (ArgumentException ex)

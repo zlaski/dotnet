@@ -22,8 +22,7 @@ namespace System.Xaml
         public XamlException(string message, Exception innerException)
             : base(message, innerException)
         {
-            XamlException xex = innerException as XamlException;
-            if (xex is not null)
+            if (innerException is XamlException xex)
             {
                 LineNumber = xex.LineNumber;
                 LinePosition = xex.LinePosition;
@@ -113,10 +112,10 @@ namespace System.Xaml
             : base(info, context) { }
 
         // FxCop and [Serializable] required this.
-        //public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        //{
+        // public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        // {
         //    base.GetObjectData(info, context);
-        //}
+        // }
     }
 
     [Serializable]  // FxCop advised this be Serializable.
@@ -145,7 +144,7 @@ namespace System.Xaml
         public XamlDuplicateMemberException() { }
 
         public XamlDuplicateMemberException(XamlMember member, XamlType type)
-            : base(SR.Format(SR.DuplicateMemberSet, (member is not null) ? member.Name : null, (type is not null) ? type.Name : null))
+            : base(SR.Format(SR.DuplicateMemberSet, member?.Name, type?.Name))
         {
             DuplicateMember = member;
             ParentType = type;
@@ -181,7 +180,7 @@ namespace System.Xaml
     [Serializable]  // FxCop advised this be Serializable.
     public class XamlInternalException : XamlException
     {
-        const string MessagePrefix = "Internal XAML system error: ";
+        private const string MessagePrefix = "Internal XAML system error: ";
 
         // FxCop required this, default constructor.
         public XamlInternalException()

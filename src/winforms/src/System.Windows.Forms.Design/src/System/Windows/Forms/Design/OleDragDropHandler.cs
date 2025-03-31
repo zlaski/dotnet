@@ -257,7 +257,7 @@ internal partial class OleDragDropHandler
         {
             host?.Activate();
 
-            List<IComponent> selectComps = new(comps);
+            List<IComponent> selectComps = [..comps];
 
             for (int i = 0; i < comps.Length; i++)
             {
@@ -442,7 +442,7 @@ internal partial class OleDragDropHandler
         using SelectObjectScope penSelection = new(dc, pen);
 
         PInvokeCore.SetBkColor(dc, (COLORREF)(uint)ColorTranslator.ToWin32(graphicsColor));
-        PInvoke.Rectangle(dc, rectangle.X, rectangle.Y, rectangle.Right, rectangle.Bottom);
+        PInvokeCore.Rectangle(dc, rectangle.X, rectangle.Y, rectangle.Right, rectangle.Bottom);
         // ------ Duplicate code----------------------------------------------------------
     }
 

@@ -1,4 +1,5 @@
-﻿module FSharpChecker.TransparentCompiler
+﻿[<Xunit.Collection(nameof FSharp.Test.NotThreadSafeResourceCollection)>]
+module FSharpChecker.TransparentCompiler
 
 open System.Collections.Concurrent
 open System.Diagnostics
@@ -555,13 +556,6 @@ let fuzzingTest seed (project: SyntheticProject) = task {
             do! Task.Delay (rng.Next maxCheckingDelayMs)
     }
 
-    use _tracerProvider =
-        Sdk.CreateTracerProviderBuilder()
-            .AddSource("fsc")
-            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName="F# Fuzzing", serviceVersion = "1"))
-            .AddJaegerExporter()
-            .Build()
-
     use _ = Activity.start $"Fuzzing {project.Name}" [ Activity.Tags.project, project.Name; "seed", seed.ToString() ]
 
     do! task {
@@ -991,6 +985,8 @@ type private LoadClosureTestShim(currentFileSystem: IFileSystem) =
                 ?shouldShadowCopy = shouldShadowCopy
             )
 
+// Because it is mutating FileSystem!
+[<Collection(nameof NotThreadSafeResourceCollection)>]
 module TestsMutatingFileSystem =
 
     [<Theory>]

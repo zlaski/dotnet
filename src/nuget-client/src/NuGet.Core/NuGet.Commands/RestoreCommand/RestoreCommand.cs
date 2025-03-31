@@ -47,6 +47,7 @@ namespace NuGet.Commands
         // status names for ProjectRestoreInformation
         private const string ErrorCodes = nameof(ErrorCodes);
         private const string WarningCodes = nameof(WarningCodes);
+        private const string SuppressedWarningCodes = nameof(SuppressedWarningCodes);
         private const string RestoreSuccess = nameof(RestoreSuccess);
         private const string ProjectFilePath = nameof(ProjectFilePath);
         private const string IsCentralVersionManagementEnabled = nameof(IsCentralVersionManagementEnabled);
@@ -59,6 +60,12 @@ namespace NuGet.Commands
         private const string TargetFrameworksCount = nameof(TargetFrameworksCount);
         private const string RuntimeIdentifiersCount = nameof(RuntimeIdentifiersCount);
         private const string TreatWarningsAsErrors = nameof(TreatWarningsAsErrors);
+        private const string SDKAnalysisLevel = nameof(SDKAnalysisLevel);
+        private const string UsingMicrosoftNETSdk = nameof(UsingMicrosoftNETSdk);
+        private const string NETSdkVersion = nameof(NETSdkVersion);
+        private const string UpdatedAssetsFile = nameof(UpdatedAssetsFile);
+        private const string UpdatedMSBuildFiles = nameof(UpdatedMSBuildFiles);
+        private const string IsPackageInstallationTrigger = nameof(IsPackageInstallationTrigger);
 
         // no-op data names
         private const string NoOpDuration = nameof(NoOpDuration);
@@ -69,6 +76,7 @@ namespace NuGet.Commands
         private const string NoOpRestoreOutputEvaluationResult = nameof(NoOpRestoreOutputEvaluationResult);
         private const string NoOpReplayLogsDuration = nameof(NoOpReplayLogsDuration);
         private const string NoOpCacheFileAgeDays = nameof(NoOpCacheFileAgeDays);
+        private const string ForceRestore = nameof(ForceRestore);
 
         // lock file data names
         private const string EvaluateLockFileDuration = nameof(EvaluateLockFileDuration);
@@ -119,8 +127,16 @@ namespace NuGet.Commands
         private const string AuditDurationCheck = "Audit.Duration.Check";
         private const string AuditDurationOutput = "Audit.Duration.Output";
         private const string AuditDurationTotal = "Audit.Duration.Total";
+        private const string AuditPackageDownloadVulnerabilitiesPackages = "Audit.Vulnerability.PackageDownload.Packages";
+        private const string AuditPackageDownloadVulnerabilitiesSev0 = "Audit.Vulnerability.PackageDownload.Severity0";
+        private const string AuditPackageDownloadVulnerabilitiesSev1 = "Audit.Vulnerability.PackageDownload.Severity1";
+        private const string AuditPackageDownloadVulnerabilitiesSev2 = "Audit.Vulnerability.PackageDownload.Severity2";
+        private const string AuditPackageDownloadVulnerabilitiesSev3 = "Audit.Vulnerability.PackageDownload.Severity3";
+        private const string AuditPackageDownloadVulnerabilitiesSevInvalid = "Audit.Vulnerability.PackageDownload.SeverityInvalid";
+        private const string AuditSuppressedAdvisoriesTotalPackageDownloadWarningsSuppressedCount = "Audit.Vulnerability.PackageDownloads.TotalWarningsSuppressed.Count";
+        private const string AuditSuppressedAdvisoriesDistinctPackageDownloadAdvisoriesSuppressedCount = "Audit.Vulnerability.PackageDownload.DistinctAdvisoriesSuppressed.Count";
 
-        private readonly bool _enableNewDependencyResolver;
+        internal readonly bool _enableNewDependencyResolver;
         private readonly bool _isLockFileEnabled;
 
         public RestoreCommand(RestoreRequest request)
@@ -149,7 +165,13 @@ namespace NuGet.Commands
 
             _success = !request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
             _isLockFileEnabled = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
-            _enableNewDependencyResolver = _request.Project.RuntimeGraph.Supports.Count == 0 && !_isLockFileEnabled && !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
+            _enableNewDependencyResolver = _request.Project.RuntimeGraph.Supports.Count == 0 && ShouldUseNewResolverWithLockFile(_isLockFileEnabled, _request.Project) && !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
+        }
+
+        // Use the new lock file if lock files are not enabled, or if lock files are enabled and .NET 10 SDK is used. Note that the legacy fallback is *false* in this case.
+        private static bool ShouldUseNewResolverWithLockFile(bool isLockFileEnabled, PackageSpec project)
+        {
+            return !isLockFileEnabled || (project.RestoreMetadata.UsingMicrosoftNETSdk && SdkAnalysisLevelMinimums.IsEnabled(project.RestoreMetadata.SdkAnalysisLevel, project.RestoreMetadata.UsingMicrosoftNETSdk, SdkAnalysisLevelMinimums.NewResolverWithLockFiles));
         }
 
         public Task<RestoreResult> ExecuteAsync()
@@ -161,7 +183,7 @@ namespace NuGet.Commands
         {
             using (var telemetry = TelemetryActivity.Create(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
-                int httpSourcesCount = _request.DependencyProviders.RemoteProviders.Where(e => e.IsHttp).Count();
+                int httpSourcesCount = _request.DependencyProviders.RemoteProviders.Count(e => e.IsHttp);
                 bool auditEnabled = AuditUtility.ParseEnableValue(
                     _request.Project.RestoreMetadata?.RestoreAuditProperties,
                     _request.Project.FilePath,
@@ -181,12 +203,13 @@ namespace NuGet.Commands
                 var contextForProject = CreateRemoteWalkContext(_request, _logger);
 
                 CacheFile cacheFile = null;
+                bool noOpCacheFileEvaluation = false;
 
                 using (telemetry.StartIndependentInterval(NoOpDuration))
                 {
                     if (NoOpRestoreUtilities.IsNoOpSupported(_request))
                     {
-                        (RestoreResult noOpResult, cacheFile) = await EvaluateNoOpAsync(telemetry, cacheFile, restoreTime);
+                        (RestoreResult noOpResult, noOpCacheFileEvaluation, cacheFile) = await EvaluateNoOpAsync(telemetry, cacheFile, restoreTime);
 
                         if (noOpResult != null)
                         {
@@ -203,7 +226,7 @@ namespace NuGet.Commands
                     _success = false;
                 }
 
-                await ShowHttpSourcesError();
+                _success &= await ShowHttpSourcesError();
 
                 _success &= HasValidPlatformVersions();
 
@@ -282,7 +305,7 @@ namespace NuGet.Commands
                 restoreTime.Stop();
 
                 // Create result
-                return new RestoreResult(
+                var restoreResult = new RestoreResult(
                     _success,
                     graphs,
                     checkResults,
@@ -299,8 +322,14 @@ namespace NuGet.Commands
                     _request.ProjectStyle,
                     restoreTime.Elapsed)
                 {
-                    AuditRan = auditRan
+                    AuditRan = auditRan,
+                    DidDGHashChange = !noOpCacheFileEvaluation
                 };
+
+                telemetry.TelemetryEvent[UpdatedAssetsFile] = restoreResult._isAssetsFileDirty.Value;
+                telemetry.TelemetryEvent[UpdatedMSBuildFiles] = restoreResult._dirtyMSBuildFiles.Value.Count > 0;
+
+                return restoreResult;
             }
         }
 
@@ -319,6 +348,10 @@ namespace NuGet.Commands
             telemetry.TelemetryEvent[TargetFrameworksCount] = _request.Project.RestoreMetadata.TargetFrameworks.Count;
             telemetry.TelemetryEvent[RuntimeIdentifiersCount] = _request.Project.RuntimeGraph.Runtimes.Count;
             telemetry.TelemetryEvent[TreatWarningsAsErrors] = _request.Project.RestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors;
+            telemetry.TelemetryEvent[SDKAnalysisLevel] = _request.Project.RestoreMetadata.SdkAnalysisLevel;
+            telemetry.TelemetryEvent[UsingMicrosoftNETSdk] = _request.Project.RestoreMetadata.UsingMicrosoftNETSdk;
+            telemetry.TelemetryEvent[NETSdkVersion] = _request.Project.RestoreSettings.SdkVersion;
+            telemetry.TelemetryEvent[IsPackageInstallationTrigger] = !_request.IsRestoreOriginalAction;
             _operationId = telemetry.OperationId;
 
             var isCpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
@@ -333,19 +366,21 @@ namespace NuGet.Commands
             telemetry.TelemetryEvent[AuditEnabled] = auditEnabled ? "enabled" : "disabled";
         }
 
-        private async Task<(RestoreResult, CacheFile)> EvaluateNoOpAsync(TelemetryActivity telemetry, CacheFile cacheFile, Stopwatch restoreTime)
+        private async Task<(RestoreResult, bool, CacheFile)> EvaluateNoOpAsync(TelemetryActivity telemetry, CacheFile cacheFile, Stopwatch restoreTime)
         {
             telemetry.StartIntervalMeasure();
-            bool noOp;
+            bool noOpCacheFileEvaluation;
             TimeSpan? cacheFileAge;
 
             if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStart(_request.Project.FilePath);
-            (cacheFile, noOp, cacheFileAge) = EvaluateCacheFile();
+            (cacheFile, noOpCacheFileEvaluation, cacheFileAge) = EvaluateCacheFile();
             if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStop(_request.Project.FilePath);
 
-            telemetry.TelemetryEvent[NoOpCacheFileEvaluationResult] = noOp;
+            telemetry.TelemetryEvent[NoOpCacheFileEvaluationResult] = noOpCacheFileEvaluation;
+            telemetry.TelemetryEvent[ForceRestore] = !_request.AllowNoOp;
+
             telemetry.EndIntervalMeasure(NoOpCacheFileEvaluateDuration);
-            if (noOp)
+            if (noOpCacheFileEvaluation && _request.AllowNoOp && !_request.RestoreForceEvaluate)
             {
                 telemetry.StartIntervalMeasure();
 
@@ -357,7 +392,8 @@ namespace NuGet.Commands
                 if (noOpSuccess)
                 {
                     telemetry.StartIntervalMeasure();
-
+                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFinish, _request.Project.Name));
+                    _success = true;
                     // Replay Warnings and Errors from an existing lock file in case of a no-op.
                     await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(cacheFile.LogMessages, _logger);
 
@@ -368,24 +404,32 @@ namespace NuGet.Commands
                     telemetry.TelemetryEvent[RestoreSuccess] = _success;
                     telemetry.TelemetryEvent[TotalUniquePackagesCount] = cacheFile.ExpectedPackageFilePaths?.Count ?? -1;
                     telemetry.TelemetryEvent[NewPackagesInstalledCount] = 0;
+                    telemetry.TelemetryEvent[UpdatedAssetsFile] = false;
+                    telemetry.TelemetryEvent[UpdatedMSBuildFiles] = false;
+
                     if (cacheFileAge.HasValue) { telemetry.TelemetryEvent[NoOpCacheFileAgeDays] = cacheFileAge.Value.TotalDays; }
 
                     return (new NoOpRestoreResult(
-                        _success,
-                        _request.LockFilePath,
-                        new Lazy<LockFile>(() => LockFileUtilities.GetLockFile(_request.LockFilePath, _logger)),
-                        cacheFile,
-                        _request.Project.RestoreMetadata.CacheFilePath,
-                        _request.ProjectStyle,
-                        restoreTime.Elapsed), cacheFile);
+                            _success,
+                            _request.LockFilePath,
+                            new Lazy<LockFile>(() => LockFileUtilities.GetLockFile(_request.LockFilePath, _logger)),
+                            cacheFile,
+                            _request.Project.RestoreMetadata.CacheFilePath,
+                            _request.ProjectStyle,
+                            restoreTime.Elapsed),
+                        noOpCacheFileEvaluation,
+                        cacheFile);
                 }
             }
 
-            return (null, cacheFile);
+            _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpDGChanged, _request.Project.Name));
+
+            return (null, noOpCacheFileEvaluation, cacheFile);
         }
 
-        private async Task ShowHttpSourcesError()
+        private async Task<bool> ShowHttpSourcesError()
         {
+            bool error = false;
             if (_request.DependencyProviders.RemoteProviders != null)
             {
                 foreach (var remoteProvider in _request.DependencyProviders.RemoteProviders)
@@ -401,6 +445,7 @@ namespace NuGet.Commands
                         {
                             await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302,
                             string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source)));
+                            error = true;
                         }
                         else
                         {
@@ -410,6 +455,7 @@ namespace NuGet.Commands
                     }
                 }
             }
+            return !error;
         }
 
         private async Task<(bool, bool, string, PackagesLockFile)> EvaluateLockFile(TelemetryActivity telemetry, RemoteWalkContext contextForProject, string packagesLockFilePath, PackagesLockFile packagesLockFile, CancellationToken token)
@@ -580,6 +626,7 @@ namespace NuGet.Commands
 
                 var errorCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Code)));
                 var warningCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Warning).Select(l => l.Code)));
+                var suppressedWarningCodes = ConcatAsString(new HashSet<NuGetLogCode>(_logger.SuppressedWarnings.Select(l => l.Code)));
 
                 if (!string.IsNullOrEmpty(errorCodes))
                 {
@@ -589,6 +636,11 @@ namespace NuGet.Commands
                 if (!string.IsNullOrEmpty(warningCodes))
                 {
                     telemetry.TelemetryEvent[WarningCodes] = warningCodes;
+                }
+
+                if (!string.IsNullOrEmpty(suppressedWarningCodes))
+                {
+                    telemetry.TelemetryEvent[SuppressedWarningCodes] = suppressedWarningCodes;
                 }
 
                 telemetry.TelemetryEvent[NewPackagesInstalledCount] = graphs.Where(g => !g.InConflict).SelectMany(g => g.Install).Distinct().Count();
@@ -612,12 +664,12 @@ namespace NuGet.Commands
         /// <returns>False if no vulnerability database could be found (so packages were not scanned for vulnerabilities), true otherwise.</returns>
         private async Task<bool> PerformAuditAsync(IEnumerable<RestoreTargetGraph> graphs, TelemetryActivity telemetry, CancellationToken token)
         {
-            telemetry.StartIntervalMeasure();
             var audit = new AuditUtility(
                 _request.Project.RestoreMetadata.RestoreAuditProperties,
                 _request.Project.FilePath,
                 graphs,
                 _request.DependencyProviders.VulnerabilityInfoProviders,
+                _request.Project.TargetFrameworks,
                 _logger);
             bool auditRan = await audit.CheckPackageVulnerabilitiesAsync(token);
 
@@ -642,6 +694,15 @@ namespace NuGet.Commands
             telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev2] = audit.Sev2TransitiveMatches;
             telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev3] = audit.Sev3TransitiveMatches;
             telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySevInvalid] = audit.InvalidSevTransitiveMatches;
+
+            if (audit.PackageDownloadPackagesWithAdvisory is not null) { AddPackagesList(telemetry, AuditPackageDownloadVulnerabilitiesPackages, audit.PackageDownloadPackagesWithAdvisory); }
+            telemetry.TelemetryEvent[AuditPackageDownloadVulnerabilitiesSev0] = audit.Sev0PackageDownloadMatches;
+            telemetry.TelemetryEvent[AuditPackageDownloadVulnerabilitiesSev1] = audit.Sev1PackageDownloadMatches;
+            telemetry.TelemetryEvent[AuditPackageDownloadVulnerabilitiesSev2] = audit.Sev2PackageDownloadMatches;
+            telemetry.TelemetryEvent[AuditPackageDownloadVulnerabilitiesSev3] = audit.Sev3PackageDownloadMatches;
+            telemetry.TelemetryEvent[AuditPackageDownloadVulnerabilitiesSevInvalid] = audit.InvalidSevPackageDownloadMatches;
+            telemetry.TelemetryEvent[AuditSuppressedAdvisoriesTotalPackageDownloadWarningsSuppressedCount] = audit.TotalPackageDownloadWarningsSuppressedCount;
+            telemetry.TelemetryEvent[AuditSuppressedAdvisoriesDistinctPackageDownloadAdvisoriesSuppressedCount] = audit.DistinctPackageDownloadAdvisoriesSuppressedCount;
 
             telemetry.TelemetryEvent[AuditDataSources] = audit.SourcesWithVulnerabilityData;
             if (audit.DownloadDurationSeconds.HasValue) { telemetry.TelemetryEvent[AuditDurationDownload] = audit.DownloadDurationSeconds.Value; }
@@ -901,10 +962,10 @@ namespace NuGet.Commands
             return (success, isLockFileValid, packagesLockFile);
         }
 
-        private (CacheFile cacheFile, bool noOp, TimeSpan? cacheFileAge) EvaluateCacheFile()
+        private (CacheFile cacheFile, bool noOpCacheFileEvaluation, TimeSpan? cacheFileAge) EvaluateCacheFile()
         {
             CacheFile cacheFile;
-            var noOp = false;
+            var noOpCacheFileEvaluation = false;
             TimeSpan? cacheFileAge = null;
 
             var noOpDgSpec = NoOpRestoreUtilities.GetNoOpDgSpec(_request);
@@ -917,25 +978,18 @@ namespace NuGet.Commands
 
             var newDgSpecHash = noOpDgSpec.GetHash();
 
-            // if --force-evaluate flag is passed then restore noop check will also be skipped.
-            // this will also help us to get rid of -force flag in near future.
             // DgSpec doesn't contain log messages, so skip no-op if there are any, as it's not taken into account in the hash
-            if (_request.AllowNoOp &&
-                !_request.RestoreForceEvaluate &&
-                CacheFileExists(_request.Project.RestoreMetadata.CacheFilePath, out cacheFileAge))
+            if (CacheFileExists(_request.Project.RestoreMetadata.CacheFilePath, out cacheFileAge))
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 
                 if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash) && VerifyCacheFileMatchesProject(cacheFile))
                 {
-                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFinish, _request.Project.Name));
-                    _success = true;
-                    noOp = true;
+                    noOpCacheFileEvaluation = true;
                 }
                 else
                 {
                     cacheFile = new CacheFile(newDgSpecHash);
-                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpDGChanged, _request.Project.Name));
                 }
             }
             else
@@ -946,14 +1000,14 @@ namespace NuGet.Commands
             // DotnetCliTool restores are special because the the assets file location is not known until after the restore itself. So we just clean up.
             if (_request.ProjectStyle == ProjectStyle.DotnetCliTool)
             {
-                if (!noOp)
+                if (!noOpCacheFileEvaluation)
                 {
                     // Clean up to preserve the pre no-op behavior. This should not be used, but we want to be cautious.
                     _request.LockFilePath = null;
                     _request.Project.RestoreMetadata.CacheFilePath = null;
                 }
             }
-            return (cacheFile, noOp, cacheFileAge);
+            return (cacheFile, noOpCacheFileEvaluation, cacheFileAge);
 
             static bool CacheFileExists(string path, out TimeSpan? cacheFileAge)
             {

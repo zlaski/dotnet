@@ -6,7 +6,11 @@
     <RootNamespace>Microsoft.CodeAnalysis</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TargetFrameworks>$(NetRoslynSourceBuild);netstandard2.0</TargetFrameworks>
-    <DefineConstants>$(DefineConstants);COMPILERCORE</DefineConstants>
+    <DefineConstants>$(DefineConstants);COMPILERCORE;MICROSOFT_CODEANALYSIS_CONTRACTS_NO_CONTRACT</DefineConstants>
+
+    <!-- Do not expose PooledDisposer APIs to core compiler libraries as widespread implicit try-finally blocks might negatively affect performance. -->
+    <DefineConstants>$(DefineConstants);MICROSOFT_CODEANALYSIS_POOLEDOBJECTS_NO_POOLED_DISPOSER</DefineConstants>
+
     <NoStdLib>true</NoStdLib>
     <ApplyNgenOptimization Condition="'$(TargetFramework)' == 'netstandard2.0'">full</ApplyNgenOptimization>
     <GeneratePerformanceSensitiveAttribute>true</GeneratePerformanceSensitiveAttribute>
@@ -31,9 +35,9 @@
       will import everything but content files from Microsoft.CodeAnalysis.Analyzers, specifically, analyzers.
     -->
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Condition="'$(DotNetBuildSourceOnly)' != 'true'" PrivateAssets="ContentFiles" />
-    <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+    <PackageReference Include="System.Collections.Immutable" />
     <PackageReference Include="System.Memory" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
-    <PackageReference Include="System.Reflection.Metadata" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+    <PackageReference Include="System.Reflection.Metadata" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
     <PackageReference Include="System.Text.Encoding.CodePages" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
@@ -115,4 +119,5 @@
   <Import Project="..\..\..\Dependencies\CodeAnalysis.Debugging\Microsoft.CodeAnalysis.Debugging.projitems" Label="Shared" />
   <Import Project="..\..\..\Dependencies\PooledObjects\Microsoft.CodeAnalysis.PooledObjects.projitems" Label="Shared" />
   <Import Project="..\..\..\Dependencies\Collections\Microsoft.CodeAnalysis.Collections.projitems" Label="Shared" />
+  <Import Project="..\..\..\Dependencies\Contracts\Microsoft.CodeAnalysis.Contracts.projitems" Label="Shared" />
 </Project>

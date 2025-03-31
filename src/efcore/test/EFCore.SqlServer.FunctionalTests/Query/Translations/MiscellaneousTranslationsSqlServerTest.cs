@@ -3,7 +3,7 @@
 
 namespace Microsoft.EntityFrameworkCore.Query.Translations;
 
-public class MiscellaneousTranslationsSqlServerTest : MiscellaneousTranslationsTestBase<BasicTypesQuerySqlServerFixture>
+public class MiscellaneousTranslationsSqlServerTest : MiscellaneousTranslationsRelationalTestBase<BasicTypesQuerySqlServerFixture>
 {
     public MiscellaneousTranslationsSqlServerTest(BasicTypesQuerySqlServerFixture fixture, ITestOutputHelper testOutputHelper)
         : base(fixture)
@@ -12,98 +12,63 @@ public class MiscellaneousTranslationsSqlServerTest : MiscellaneousTranslationsT
         Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
-    #region Guid
+    #region Random
 
-    public override async Task Guid_new_with_constant(bool async)
+    public override async Task Random_on_EF_Functions(bool async)
     {
-        await base.Guid_new_with_constant(async);
+        await base.Random_on_EF_Functions(async);
 
         AssertSql(
             """
-SELECT [b].[Id], [b].[Bool], [b].[Byte], [b].[ByteArray], [b].[DateOnly], [b].[DateTime], [b].[DateTimeOffset], [b].[Decimal], [b].[Double], [b].[Enum], [b].[FlagsEnum], [b].[Float], [b].[Guid], [b].[Int], [b].[Long], [b].[Short], [b].[String], [b].[TimeOnly], [b].[TimeSpan]
+SELECT COUNT(*)
 FROM [BasicTypesEntities] AS [b]
-WHERE [b].[Guid] = 'df36f493-463f-4123-83f9-6b135deeb7ba'
+WHERE RAND() >= 0.0E0 AND RAND() < 1.0E0
 """);
     }
 
-    public override async Task Guid_new_with_parameter(bool async)
+    public override async Task Random_Shared_Next_with_no_args(bool async)
     {
-        await base.Guid_new_with_parameter(async);
+        await base.Random_Shared_Next_with_no_args(async);
 
-        AssertSql(
-            """
-@p='df36f493-463f-4123-83f9-6b135deeb7ba'
-
-SELECT [b].[Id], [b].[Bool], [b].[Byte], [b].[ByteArray], [b].[DateOnly], [b].[DateTime], [b].[DateTimeOffset], [b].[Decimal], [b].[Double], [b].[Enum], [b].[FlagsEnum], [b].[Float], [b].[Guid], [b].[Int], [b].[Long], [b].[Short], [b].[String], [b].[TimeOnly], [b].[TimeSpan]
-FROM [BasicTypesEntities] AS [b]
-WHERE [b].[Guid] = @p
-""");
+        AssertSql();
     }
 
-    public override async Task Guid_ToString_projection(bool async)
+    public override async Task Random_Shared_Next_with_one_arg(bool async)
     {
-        await base.Guid_ToString_projection(async);
+        await base.Random_Shared_Next_with_one_arg(async);
 
-        AssertSql(
-            """
-SELECT CONVERT(varchar(36), [b].[Guid])
-FROM [BasicTypesEntities] AS [b]
-""");
+        AssertSql();
     }
 
-    public override async Task Guid_NewGuid(bool async)
+    public override async Task Random_Shared_Next_with_two_args(bool async)
     {
-        await base.Guid_NewGuid(async);
+        await base.Random_Shared_Next_with_two_args(async);
 
-        AssertSql(
-            """
-SELECT [b].[Id], [b].[Bool], [b].[Byte], [b].[ByteArray], [b].[DateOnly], [b].[DateTime], [b].[DateTimeOffset], [b].[Decimal], [b].[Double], [b].[Enum], [b].[FlagsEnum], [b].[Float], [b].[Guid], [b].[Int], [b].[Long], [b].[Short], [b].[String], [b].[TimeOnly], [b].[TimeSpan]
-FROM [BasicTypesEntities] AS [b]
-WHERE NEWID() <> '00000000-0000-0000-0000-000000000000'
-""");
+        AssertSql();
     }
 
-    #endregion Guid
-
-    #region Byte array
-
-    public override async Task Byte_array_Length(bool async)
+    public override async Task Random_new_Next_with_no_args(bool async)
     {
-        await base.Byte_array_Length(async);
+        await base.Random_new_Next_with_no_args(async);
 
-        AssertSql(
-            """
-SELECT [b].[Id], [b].[Bool], [b].[Byte], [b].[ByteArray], [b].[DateOnly], [b].[DateTime], [b].[DateTimeOffset], [b].[Decimal], [b].[Double], [b].[Enum], [b].[FlagsEnum], [b].[Float], [b].[Guid], [b].[Int], [b].[Long], [b].[Short], [b].[String], [b].[TimeOnly], [b].[TimeSpan]
-FROM [BasicTypesEntities] AS [b]
-WHERE CAST(DATALENGTH([b].[ByteArray]) AS int) = 4
-""");
+        AssertSql();
     }
 
-    public override async Task Byte_array_array_index(bool async)
+    public override async Task Random_new_Next_with_one_arg(bool async)
     {
-        await base.Byte_array_array_index(async);
+        await base.Random_new_Next_with_one_arg(async);
 
-        AssertSql(
-            """
-SELECT [b].[Id], [b].[Bool], [b].[Byte], [b].[ByteArray], [b].[DateOnly], [b].[DateTime], [b].[DateTimeOffset], [b].[Decimal], [b].[Double], [b].[Enum], [b].[FlagsEnum], [b].[Float], [b].[Guid], [b].[Int], [b].[Long], [b].[Short], [b].[String], [b].[TimeOnly], [b].[TimeSpan]
-FROM [BasicTypesEntities] AS [b]
-WHERE CAST(DATALENGTH([b].[ByteArray]) AS int) >= 3 AND CAST(SUBSTRING([b].[ByteArray], 2 + 1, 1) AS tinyint) = CAST(190 AS tinyint)
-""");
+        AssertSql();
     }
 
-    public override async Task Byte_array_First(bool async)
+    public override async Task Random_new_Next_with_two_args(bool async)
     {
-        await base.Byte_array_First(async);
+        await base.Random_new_Next_with_two_args(async);
 
-        AssertSql(
-            """
-SELECT [b].[Id], [b].[Bool], [b].[Byte], [b].[ByteArray], [b].[DateOnly], [b].[DateTime], [b].[DateTimeOffset], [b].[Decimal], [b].[Double], [b].[Enum], [b].[FlagsEnum], [b].[Float], [b].[Guid], [b].[Int], [b].[Long], [b].[Short], [b].[String], [b].[TimeOnly], [b].[TimeSpan]
-FROM [BasicTypesEntities] AS [b]
-WHERE CAST(DATALENGTH([b].[ByteArray]) AS int) >= 1 AND CAST(SUBSTRING([b].[ByteArray], 1, 1) AS tinyint) = CAST(222 AS tinyint)
-""");
+        AssertSql();
     }
 
-    #endregion Byte array
+    #endregion Random
 
     #region Convert
 

@@ -1,8 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT license. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
@@ -322,7 +320,7 @@ public class MarkupTransitionCompletionItemProviderTest(ITestOutputHelper testOu
     {
         Assert.Equal(SyntaxConstants.TextTagName, item.DisplayText);
         Assert.Equal(SyntaxConstants.TextTagName, item.InsertText);
-        var completionDescription = item.GetMarkupTransitionCompletionDescription();
+        var completionDescription = Assert.IsType<MarkupTransitionCompletionDescription>(item.DescriptionInfo);
         Assert.Equal(CodeAnalysisResources.MarkupTransition_Description, completionDescription.Description);
     }
 
@@ -343,13 +341,14 @@ public class MarkupTransitionCompletionItemProviderTest(ITestOutputHelper testOu
     private static RazorSyntaxTree CreateSyntaxTree(string text, string fileKind, params DirectiveDescriptor[] directives)
     {
         var sourceDocument = TestRazorSourceDocument.Create(text);
-        var options = RazorParserOptions.Create(builder =>
+
+        var builder = new RazorParserOptions.Builder(RazorLanguageVersion.Latest, fileKind)
         {
-            foreach (var directive in directives)
-            {
-                builder.Directives.Add(directive);
-            }
-        }, fileKind);
+            Directives = [.. directives]
+        };
+
+        var options = builder.ToOptions();
+
         var syntaxTree = RazorSyntaxTree.Parse(sourceDocument, options);
         return syntaxTree;
     }

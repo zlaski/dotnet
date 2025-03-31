@@ -15,10 +15,8 @@ using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.LanguageService;
-using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Shared.Utilities;
-using Microsoft.CodeAnalysis.Utilities;
 using Roslyn.Utilities;
 
 #if CODE_STYLE
@@ -166,7 +164,7 @@ internal abstract partial class AbstractGenerateConstructorService<TService, TEx
             var remainingArguments = _arguments.Skip(argumentCount).ToImmutableArray();
             var remainingParameterNames = _service.GenerateParameterNames(
                 _document, remainingArguments,
-                delegatedConstructor.Parameters.Select(p => p.Name).ToList(),
+                [.. delegatedConstructor.Parameters.Select(p => p.Name)],
                 _parameterNamingRule,
                 cancellationToken);
 
@@ -195,8 +193,8 @@ internal abstract partial class AbstractGenerateConstructorService<TService, TEx
 
             for (var i = allParameters.Length; i > 0; i--)
             {
-                var parameters = allParameters.TakeAsArray(i);
-                var expressions = allExpressions.TakeAsArray(i);
+                var parameters = allParameters[0..i];
+                var expressions = allExpressions[0..i];
                 var result = FindConstructorToDelegateTo(parameters, expressions, TypeToGenerateIn.InstanceConstructors, cancellationToken) ??
                              FindConstructorToDelegateTo(parameters, expressions, TypeToGenerateIn.BaseType.InstanceConstructors, cancellationToken);
                 if (result != null)
@@ -287,7 +285,7 @@ internal abstract partial class AbstractGenerateConstructorService<TService, TEx
             var semanticModel = _document.SemanticModel;
             var allTypes = _arguments.Select(a => _service.GetArgumentType(_document.SemanticModel, a, cancellationToken));
 
-            return allTypes.Select(t => FixType(t, semanticModel, allTypeParameters)).ToImmutableArray();
+            return [.. allTypes.Select(t => FixType(t, semanticModel, allTypeParameters))];
         }
 
         private static ITypeSymbol FixType(ITypeSymbol typeSymbol, SemanticModel semanticModel, IEnumerable<ITypeParameterSymbol> allTypeParameters)
@@ -366,9 +364,8 @@ internal abstract partial class AbstractGenerateConstructorService<TService, TEx
 
         private static bool IsValidAttributeParameterType(ITypeSymbol type)
         {
-            if (type.Kind == SymbolKind.ArrayType)
+            if (type is IArrayTypeSymbol arrayType)
             {
-                var arrayType = (IArrayTypeSymbol)type;
                 if (arrayType.Rank != 1)
                 {
                     return false;

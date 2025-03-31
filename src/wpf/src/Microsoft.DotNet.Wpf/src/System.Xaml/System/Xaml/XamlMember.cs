@@ -4,6 +4,7 @@
 
 #nullable disable
 
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
@@ -358,7 +359,7 @@ namespace System.Xaml
                 EnsureReflector();
                 if (_reflector.DependsOn is null)
                 {
-                    _reflector.DependsOn = LookupDependsOn() ?? XamlType.EmptyList<XamlMember>.Value;
+                    _reflector.DependsOn = LookupDependsOn() ?? ReadOnlyCollection<XamlMember>.Empty;
                 }
 
                 return _reflector.DependsOn;
@@ -389,7 +390,7 @@ namespace System.Xaml
         /// a property of a MarkupExtension as a ReadOnlyDictionary. Opening bracket is the
         /// key, while the value is the closing bracket.
         /// </summary>
-        public IReadOnlyDictionary<char,char> MarkupExtensionBracketCharacters
+        public IReadOnlyDictionary<char, char> MarkupExtensionBracketCharacters
         {
             get
             {
@@ -740,7 +741,7 @@ namespace System.Xaml
         /// a property of a MarkupExtension as a ReadOnlyDictionary. Opening bracket is the
         /// key, while the value is the closing bracket.
         /// </summary>
-        protected virtual IReadOnlyDictionary<char,char> LookupMarkupExtensionBracketCharacters()
+        protected virtual IReadOnlyDictionary<char, char> LookupMarkupExtensionBracketCharacters()
         {
             if (AreAttributesAvailable)
             {
@@ -771,7 +772,7 @@ namespace System.Xaml
             }
 
             PropertyInfo pi = UnderlyingMember as PropertyInfo;
-            return (pi is not null) ? pi.GetGetMethod(true) : null;
+            return pi?.GetGetMethod(true);
         }
 
         protected virtual MethodInfo LookupUnderlyingSetter()
@@ -792,7 +793,7 @@ namespace System.Xaml
             else
             {
                 EventInfo ei = UnderlyingMember as EventInfo;
-                return (ei is not null) ? ei.GetAddMethod(true) : null;
+                return ei?.GetAddMethod(true);
             }
         }
 
@@ -1090,7 +1091,7 @@ namespace System.Xaml
 
         #endregion
 
-        enum MemberType : byte
+        private enum MemberType : byte
         {
             Instance,
             Attachable,

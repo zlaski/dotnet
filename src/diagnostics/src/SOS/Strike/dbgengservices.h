@@ -6,6 +6,7 @@
 #include <unknwn.h>
 #include <rpc.h>
 #include <dbgeng.h>
+#include <dbgmodel.h>
 #include "debuggerservices.h"
 #include "remotememoryservice.h"
 #include "extensions.h"
@@ -28,6 +29,7 @@ private:
     PDEBUG_SYMBOLS2       m_symbols;
     PDEBUG_SYSTEM_OBJECTS m_system;
     PDEBUG_ADVANCED       m_advanced;
+    IModelObject*         m_settings;
     IMachine*             m_targetMachine;
     bool                  m_flushNeeded;
 
@@ -232,6 +234,9 @@ public:
         PCSTR commandLine,
         PEXECUTE_COMMAND_OUTPUT_CALLBACK callback);
 
+    HRESULT STDMETHODCALLTYPE GetDacSignatureVerificationSettings(
+        BOOL* dacSignatureVerificationEnabled);
+
     //----------------------------------------------------------------------------
     // IRemoteMemoryService
     //----------------------------------------------------------------------------
@@ -374,13 +379,17 @@ public:
         m_previous(nullptr),
         m_callback(callback)
     {
-        _ASSERTE(SUCCEEDED(client->GetOutputCallbacks(&m_previous)));
-        _ASSERTE(SUCCEEDED(client->SetOutputCallbacks(this)));
+        HRESULT hr = client->GetOutputCallbacks(&m_previous);
+        _ASSERTE(SUCCEEDED(hr));
+
+        hr = client->SetOutputCallbacks(this);
+        _ASSERTE(SUCCEEDED(hr));
     }
 
     ~OutputCaptureHolder()
     {
-        _ASSERTE(SUCCEEDED(m_client->SetOutputCallbacks(m_previous)));
+        HRESULT hr = m_client->SetOutputCallbacks(m_previous);
+        _ASSERTE(SUCCEEDED(hr));
         _ASSERTE(m_ref == 0);
     }
 };

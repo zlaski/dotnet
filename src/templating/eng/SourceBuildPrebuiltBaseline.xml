@@ -4,6 +4,8 @@
 <UsageData>
   <IgnorePatterns>
     <!-- Lifted to live version in VMR. -->
-    <UsagePattern IdentityGlob="System.Formats.Asn1/8.0.*" />
+    <UsagePattern IdentityGlob="System.Formats.Asn1/9.0.*" />
+    <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection.Abstractions/8.0.*" />
+    <UsagePattern IdentityGlob="Microsoft.Extensions.Logging.Abstractions/8.0.*" />
   </IgnorePatterns>
 </UsageData>

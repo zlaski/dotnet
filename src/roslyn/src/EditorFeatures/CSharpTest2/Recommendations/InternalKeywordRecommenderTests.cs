@@ -9,7 +9,7 @@ using Xunit;
 namespace Microsoft.CodeAnalysis.Editor.CSharp.UnitTests.Recommendations
 {
     [Trait(Traits.Feature, Traits.Features.KeywordRecommending)]
-    public class InternalKeywordRecommenderTests : KeywordRecommenderTests
+    public sealed class InternalKeywordRecommenderTests : KeywordRecommenderTests
     {
         [Fact]
         public async Task TestAtRoot_Interactive()
@@ -29,9 +29,9 @@ namespace Microsoft.CodeAnalysis.Editor.CSharp.UnitTests.Recommendations
         }
 
         [Fact]
-        public async Task TestAfterGlobalStatement_Interactive()
+        public async Task TestAfterGlobalStatement()
         {
-            await VerifyKeywordAsync(SourceCodeKind.Script,
+            await VerifyKeywordAsync(
                 """
                 System.Console.WriteLine();
                 $$
@@ -475,6 +475,23 @@ namespace Microsoft.CodeAnalysis.Editor.CSharp.UnitTests.Recommendations
                 class C {
                     int this[int i] { get { } protected $$
                 """);
+        }
+
+        [Fact]
+        public async Task TestWithinExtension()
+        {
+            await VerifyKeywordAsync(
+                """
+                static class C
+                {
+                    extension(string s)
+                    {
+                        $$
+                    }
+                }
+                """,
+                CSharpNextParseOptions,
+                CSharpNextScriptParseOptions);
         }
     }
 }

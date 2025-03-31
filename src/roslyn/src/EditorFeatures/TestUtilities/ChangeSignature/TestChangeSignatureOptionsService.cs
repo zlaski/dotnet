@@ -9,7 +9,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis.ChangeSignature;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Test.Utilities.ChangeSignature;
-using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.Editor.UnitTests.ChangeSignature;
 
@@ -28,7 +27,7 @@ internal sealed class TestChangeSignatureOptionsService() : IChangeSignatureOpti
     {
         var list = parameters.ToListOfParameters();
         var updateParameters = UpdatedSignature != null
-            ? UpdatedSignature.Select(item => item.IsExisting ? list[item.OldIndex ?? -1] : item.GetAddedParameter(document.Document)).ToImmutableArray()
+            ? [.. UpdatedSignature.Select(item => item.IsExisting ? list[item.OldIndex ?? -1] : item.GetAddedParameter(document.Document))]
             : new ImmutableArray<Parameter>();
         return new ChangeSignatureOptionsResult(new SignatureChange(
                 parameters,

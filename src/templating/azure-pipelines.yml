@@ -45,10 +45,7 @@ parameters:
   - buildConfig: Release
 
 extends:
-  ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
-    template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
-  ${{ else }}:
-    template: v1/1ES.Unofficial.PipelineTemplate.yml@1esPipelines
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
     sdl:
       sourceAnalysisPool:
@@ -59,8 +56,6 @@ extends:
         enabled: true
       tsa:
         enabled: true
-      binskim:
-        analyzeTargetGlob: +:f|**\*.dll;+:f|**\*.exe;
     stages:
     - stage: build
       displayName: Build
@@ -89,6 +84,14 @@ extends:
             enableInternalSources: true
           enableTelemetry: true
           helixRepo: dotnet/templating
+          templateContext:
+            sdl:
+              binskim:
+                analyzeTargetGlob: +:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;
+          # WORKAROUND: BinSkim requires the folder exist prior to scanning.
+          preSteps:
+          - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
+            displayName: Create artifacts/bin directory
           jobs:
           - ${{ each config in parameters.buildConfigurations }}:
             - job: Windows_NT_${{ config.buildConfig }}

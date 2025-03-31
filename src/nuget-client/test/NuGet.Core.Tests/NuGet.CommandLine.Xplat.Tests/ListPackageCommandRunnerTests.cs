@@ -149,6 +149,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     ReportType.Outdated,
                     new ListPackageConsoleRenderer(consoleOut, consoleError),
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
+                    auditSources: null,
                     logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 
@@ -196,6 +197,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     ReportType.Outdated,
                     new ListPackageConsoleRenderer(consoleOut, consoleError),
                     includeTransitive: true, prerelease: false, highestPatch: true, highestMinor: true,
+                    auditSources: null,
                     logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 
@@ -256,7 +258,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 if (includeTopLevelPositives)
                 {
                     topLevelPackages.Add(ListPackageTestHelper.CreateInstalledPackageReference(isDeprecated: true));
-                };
+                }
                 if (includeTransitivePositives)
                 {
                     transitivePackages.Add(ListPackageTestHelper.CreateInstalledPackageReference(isDeprecated: true));
@@ -274,7 +276,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     frameworks: new List<string>(),
                     ReportType.Deprecated,
                     new ListPackageConsoleRenderer(consoleOut, consoleError),
-                    includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, logger: new Mock<ILogger>().Object,
+                    includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 
                 // Act
@@ -335,7 +337,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 if (includeTopLevelPositives)
                 {
                     topLevelPackages.Add(ListPackageTestHelper.CreateInstalledPackageReference(vulnerabilityCount: 1));
-                };
+                }
                 if (includeTransitivePositives)
                 {
                     transitivePackages.Add(ListPackageTestHelper.CreateInstalledPackageReference(vulnerabilityCount: 1));
@@ -353,7 +355,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     frameworks: new List<string>(),
                     ReportType.Vulnerable,
                     new ListPackageConsoleRenderer(consoleOut, consoleError),
-                    includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, logger: new Mock<ILogger>().Object,
+                    includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 
                 // Act

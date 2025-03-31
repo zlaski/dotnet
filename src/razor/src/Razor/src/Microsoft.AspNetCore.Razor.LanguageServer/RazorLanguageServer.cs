@@ -128,7 +128,7 @@ internal partial class RazorLanguageServer : SystemTextJsonLanguageServer<RazorR
         services.AddLifeCycleServices(this, _clientConnection, _lspServerActivationTracker);
 
         services.AddSemanticTokensServices(featureOptions);
-        services.AddDocumentManagementServices(featureOptions);
+        services.AddDocumentManagementServices();
         services.AddFormattingServices(featureOptions);
         services.AddOptionsServices(_lspOptions);
         services.AddTextDocumentServices(featureOptions);
@@ -214,13 +214,14 @@ internal partial class RazorLanguageServer : SystemTextJsonLanguageServer<RazorR
                 services.AddHandlerWithCapabilities<ProjectContextsEndpoint>();
 
                 services.AddHandlerWithCapabilities<FindAllReferencesEndpoint>();
+
+                services.AddHandlerWithCapabilities<ValidateBreakpointRangeEndpoint>();
+                services.AddHandler<RazorBreakpointSpanEndpoint>();
+                services.AddHandler<RazorProximityExpressionsEndpoint>();
             }
 
             services.AddHandler<WrapWithTagEndpoint>();
-            services.AddHandler<RazorBreakpointSpanEndpoint>();
-            services.AddHandler<RazorProximityExpressionsEndpoint>();
 
-            services.AddHandlerWithCapabilities<ValidateBreakpointRangeEndpoint>();
             services.AddHandlerWithCapabilities<MapCodeEndpoint>();
         }
     }

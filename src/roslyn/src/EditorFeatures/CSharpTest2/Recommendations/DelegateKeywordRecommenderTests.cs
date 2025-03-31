@@ -30,9 +30,9 @@ public sealed class DelegateKeywordRecommenderTests : KeywordRecommenderTests
     }
 
     [Fact]
-    public async Task TestAfterGlobalStatement_Interactive()
+    public async Task TestAfterGlobalStatement()
     {
-        await VerifyKeywordAsync(SourceCodeKind.Script,
+        await VerifyKeywordAsync(
             """
             System.Console.WriteLine();
             $$
@@ -641,4 +641,19 @@ public sealed class DelegateKeywordRecommenderTests : KeywordRecommenderTests
     }
 
     #endregion
+
+    [Fact]
+    public async Task TestWithinExtension()
+    {
+        await VerifyKeywordAsync(
+            """
+                static class C
+                {
+                    extension(string s)
+                    {
+                        $$
+                    }
+                }
+                """, CSharpNextParseOptions);
+    }
 }

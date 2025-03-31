@@ -23,7 +23,7 @@
 
      OSX and Linux has problems with Xliff targets for net9, skipping via SKIP_NETCURRENT_FSC_BUILD until resolved ( The target "UpdateXlf" does not exist in the project.)
 	-->
-    <TargetFrameworks Condition=" '$(OfficialBuildId)' == '' AND '$(FSharpNetCoreProductDefaultTargetFramework)' != '' AND '$(Configuration)' != 'Proto' AND '$(SKIP_NETCURRENT_FSC_BUILD)' != 'true' ">$(FSharpNetCoreProductDefaultTargetFramework);$(TargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OfficialBuildId)' == '' AND '$(FSharpNetCoreProductTargetFramework)' != '' AND '$(Configuration)' != 'Proto' AND '$(SKIP_NETCURRENT_FSC_BUILD)' != 'true' ">$(FSharpNetCoreProductTargetFramework);$(TargetFrameworks)</TargetFrameworks>
     <DefineConstants Condition="'$(FSHARPCORE_USE_PACKAGE)' == 'true'">$(DefineConstants);FSHARPCORE_USE_PACKAGE</DefineConstants>
     <OtherFlags>$(OtherFlags) --extraoptimizationloops:1</OtherFlags>
 
@@ -597,7 +597,7 @@
     <PackageReference Include="FSharp.Core" Version="$(FSharpCoreShippedPackageVersionValue)" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" />
     <PackageReference Include="System.Reflection.Emit" Version="$(SystemReflectionEmitVersion)" />
     <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />

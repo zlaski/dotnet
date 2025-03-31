@@ -8,6 +8,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -771,6 +772,29 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         DispatchToFormCore(dispatchToForm);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("01/01/2000")]
+    public void FormWithNullableDateTime(string value)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/with-nullable-datetime",
+            FormCssSelector = "form[id=nullable]",
+            ExpectedHandlerValue = "nullable-datetime-testform",
+            InputFieldId = "Id",
+            InputFieldCssSelector = "form[id=nullable] input[id=datetime]",
+            InputFieldValue = value,
+            AssertErrors = errors =>
+            {
+                Assert.Empty(errors);
+            },
+        };
+
+        DispatchToFormCore(dispatchToForm);
+    }
+
     [Fact]
     public void CanRenderAmbiguousForms()
     {
@@ -1353,11 +1377,12 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         Browser.Exists(By.Id("submit-button")).Click();
 
-        Assert.False(Browser.Exists(By.Id("checkbox")).Selected);
-        Assert.False(Browser.Exists(By.Id("radio-button")).Selected);
+        WaitAssert.False(Browser, () => Browser.Exists(By.Id("checkbox")).Selected);
+        WaitAssert.False(Browser, () => Browser.Exists(By.Id("radio-button")).Selected);
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60067")]
     public void SubmitButtonFormactionAttributeOverridesEnhancedFormAction()
     {
         GoTo("forms/form-submit-button-with-formaction");

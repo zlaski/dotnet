@@ -22,12 +22,16 @@ namespace MS.Internal
             _maxPollingInterval = TimeSpan.FromMilliseconds(maxInterval);
 
             _cleanupTimerPriority = DispatcherPriority.ContextIdle;
-            _defaultCleanupTimer = new DispatcherTimer(_cleanupTimerPriority);
-            _defaultCleanupTimer.Interval = _basePollingInterval;
+            _defaultCleanupTimer = new DispatcherTimer(_cleanupTimerPriority)
+            {
+                Interval = _basePollingInterval
+            };
             _defaultCleanupTimer.Tick += OnCleanupTick;
 
-            _starvationTimer = new DispatcherTimer(DispatcherPriority.Normal);
-            _starvationTimer.Interval = TimeSpan.FromMilliseconds(promotionInterval);
+            _starvationTimer = new DispatcherTimer(DispatcherPriority.Normal)
+            {
+                Interval = TimeSpan.FromMilliseconds(promotionInterval)
+            };
             _starvationTimer.Tick += OnStarvationTick;
 
             _cleanupTimer = _defaultCleanupTimer;
@@ -77,7 +81,7 @@ namespace MS.Internal
             return foundDirt;
         }
 
-        void OnCleanupTick(object sender, EventArgs e)
+        private void OnCleanupTick(object sender, EventArgs e)
         {
             if (!_waitingForGC)
             {
@@ -85,7 +89,7 @@ namespace MS.Internal
             }
         }
 
-        void OnStarvationTick(object sender, EventArgs e)
+        private void OnStarvationTick(object sender, EventArgs e)
         {
             // cleanup is starving at its current priority
             // so increase the priority
@@ -112,21 +116,21 @@ namespace MS.Internal
             }
         }
 
-        DispatcherTimer _cleanupTimer;
-        DispatcherTimer _starvationTimer;
-        DispatcherTimer _defaultCleanupTimer;
-        DispatcherPriority _cleanupTimerPriority;
+        private DispatcherTimer _cleanupTimer;
+        private DispatcherTimer _starvationTimer;
+        private DispatcherTimer _defaultCleanupTimer;
+        private DispatcherPriority _cleanupTimerPriority;
 
-        int             _cleanupRequests;
-        bool            _waitingForGC;
+        private int             _cleanupRequests;
+        private bool            _waitingForGC;
 
-        Func<bool,bool> _cleanupCallback;
-        TimeSpan        _basePollingInterval;
-        TimeSpan        _maxPollingInterval;
+        private Func<bool,bool> _cleanupCallback;
+        private TimeSpan        _basePollingInterval;
+        private TimeSpan        _maxPollingInterval;
 
         // When an instance of this class is GC'd and finalized, it
         // tells the CleanupHelper that a GC has occurred.
-        class GCDetector
+        private class GCDetector
         {
             internal GCDetector(CleanupHelper parent)
             {
@@ -138,7 +142,7 @@ namespace MS.Internal
                 _parent._waitingForGC = false;
             }
 
-            CleanupHelper _parent;
+            private CleanupHelper _parent;
         }
     }
 }

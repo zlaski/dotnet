@@ -381,7 +381,7 @@ namespace System.ComponentModel
                 if (dict == null)
                 {
                     // no entry in the hashtable - add a new one
-                    dict = new HybridDictionary(true /* case insensitive */);
+                    dict = new HybridDictionary(caseInsensitive: true);
 
                     this[source] = dict;
 
@@ -612,9 +612,9 @@ namespace System.ComponentModel
 
         #endregion Private Methods
 
-        ListenerList _proposedAllListenersList;
-        List<String> _toRemove = new List<String>();
-        static readonly string AllListenersKey = "<All Listeners>"; // not a legal property name
+        private ListenerList _proposedAllListenersList;
+        private List<String> _toRemove = new List<String>();
+        private static readonly string AllListenersKey = "<All Listeners>"; // not a legal property name
     }
 }
 

@@ -16,17 +16,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 public class HtmlFormattingTest(FormattingTestContext context, HtmlFormattingFixture fixture, ITestOutputHelper testOutput)
     : FormattingTestBase(context, fixture.Service, testOutput), IClassFixture<FormattingTestContext>
 {
+    private readonly bool _useNewFormattingEngine = context.UseNewFormattingEngine;
+
     [FormattingTestFact(SkipFlipLineEnding = true)] // tracked by https://github.com/dotnet/razor/issues/10836
     public async Task FormatsComponentTags()
     {
         var tagHelpers = GetComponents();
         await RunFormattingTestAsync(
             input: """
-                       <Counter>
+                       <PageTitle>
                         @if(true){
                             <p>@DateTime.Now</p>
                     }
-                    </Counter>
+                    </PageTitle>
 
                         <GridTable>
                         @foreach (var row in rows){
@@ -37,12 +39,12 @@ public class HtmlFormattingTest(FormattingTestContext context, HtmlFormattingFix
                     </GridTable>
                     """,
             expected: """
-                    <Counter>
+                    <PageTitle>
                         @if (true)
                         {
                             <p>@DateTime.Now</p>
                         }
-                    </Counter>
+                    </PageTitle>
 
                     <GridTable>
                         @foreach (var row in rows)
@@ -438,6 +440,64 @@ public class HtmlFormattingTest(FormattingTestContext context, HtmlFormattingFix
 
             return tagHelpers.ToImmutable();
         }
+    }
+
+    [FormattingTestFact]
+    public async Task PreprocessorDirectives()
+    {
+        await RunFormattingTestAsync(
+            input: """
+                <div Model="SomeModel">
+                <div />
+                @{
+                #if DEBUG
+                }
+                 <div />
+                @{
+                #endif
+                }
+                </div>
+
+                @code {
+                    private object SomeModel {get;set;}
+                }
+                """,
+            expected: _useNewFormattingEngine
+                ? """
+                    <div Model="SomeModel">
+                        <div />
+                        @{
+                        #if DEBUG
+                            }
+                            <div />
+                            @{
+                        #endif
+
+                        }
+                    </div>
+
+                    @code {
+                        private object SomeModel { get; set; }
+                    }
+                    """
+                : """
+                    <div Model="SomeModel">
+                        <div />
+                        @{
+                    #if DEBUG
+                            }
+                            <div />
+                            @{
+                    #endif
+
+                        }
+                    </div>
+
+                    @code {
+                        private object SomeModel { get; set; }
+                    }
+                    """,
+            allowDiagnostics: true);
     }
 
     private ImmutableArray<TagHelperDescriptor> GetComponents()

@@ -208,7 +208,7 @@ namespace Microsoft.CodeAnalysis.UnifiedSuggestions
         private static async Task<UnifiedSuggestedActionSet?> GetUnifiedFixAllSuggestedActionSetAsync(
             CodeAction action,
             int actionCount,
-            IFixAllState fixAllState,
+            IFixAllState? fixAllState,
             ImmutableArray<FixAllScope> supportedScopes,
             Diagnostic firstDiagnostic,
             Workspace workspace,
@@ -462,7 +462,7 @@ namespace Microsoft.CodeAnalysis.UnifiedSuggestions
             ImmutableArray<CodeRefactoring> refactorings,
             TextSpan selection,
             bool filterOutsideSelection)
-            => refactorings.Select(r => FilterOnAnyThread(r, selection, filterOutsideSelection)).WhereNotNull().ToImmutableArray();
+            => [.. refactorings.Select(r => FilterOnAnyThread(r, selection, filterOutsideSelection)).WhereNotNull()];
 
         private static CodeRefactoring? FilterOnAnyThread(
             CodeRefactoring refactoring,
@@ -718,7 +718,7 @@ namespace Microsoft.CodeAnalysis.UnifiedSuggestions
             // If we only have a single set of items, and that set only has three max suggestion
             // offered. Then we can consider inlining any nested actions into the top level list.
             // (but we only do this if the parent of the nested actions isn't invokable itself).
-            return currentActionCount + actionSets.Sum(a => a.Actions.Count()) > 3
+            return currentActionCount + actionSets.Sum(a => a.Actions.Length) > 3
                 ? actionSets
                 : actionSets.SelectAsArray(InlineActions);
         }

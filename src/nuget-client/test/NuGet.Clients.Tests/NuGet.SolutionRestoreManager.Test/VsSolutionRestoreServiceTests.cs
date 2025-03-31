@@ -212,8 +212,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var actualToolSpec = actualRestoreSpec
                 .Projects
-                .Where(p => !object.ReferenceEquals(p, actualProjectSpec))
-                .Single();
+                .Single(p => !object.ReferenceEquals(p, actualProjectSpec));
             var actualMetadata = actualToolSpec.RestoreMetadata;
             Assert.NotNull(actualMetadata);
             Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
@@ -289,8 +288,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var actualToolSpec = actualRestoreSpec
                 .Projects
-                .Where(p => !object.ReferenceEquals(p, actualProjectSpec))
-                .Single();
+                .Single(p => !object.ReferenceEquals(p, actualProjectSpec));
             var actualMetadata = actualToolSpec.RestoreMetadata;
             Assert.NotNull(actualMetadata);
             Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
@@ -881,7 +879,7 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal(NuGetLogCode.NU1105, additionalMessage.Code);
             Assert.Equal(projectFullPath, additionalMessage.ProjectPath);
             Assert.Equal(projectFullPath, additionalMessage.FilePath);
-            additionalMessage.Message.Should().Contain(string.Format(CultureInfo.CurrentCulture, Resources.PropertyDoesNotHaveSingleValue, "PackageId", "PackageId.netcoreapp1.0, PackageId.net46"));
+            additionalMessage.Message.Should().Contain(string.Format(CultureInfo.CurrentCulture, Resources.PropertyDoesNotHaveSingleValue, "PackageId", "PackageId.net46, PackageId.netcoreapp1.0"));
         }
 
         [Fact]

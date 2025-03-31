@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Completion.Providers;
 using Microsoft.CodeAnalysis.CSharp;
@@ -12789,6 +12790,64 @@ expectedDescriptionOrNull: null, sourceCodeKind: SourceCodeKind.Script);
             matchingFilters: [FilterSet.MethodFilter, FilterSet.TargetTypedFilter]);
     }
 
+    [InlineData("IGoo", new string[] { "Goo", "GooDerived", "GooGeneric" })]
+    [InlineData("IGoo[]", new string[] { "IGoo", "IGooGeneric", "Goo", "GooAbstract", "GooDerived", "GooGeneric" })]
+    [InlineData("IGooGeneric<int>", new string[] { "GooGeneric" })]
+    [InlineData("IGooGeneric<int>[]", new string[] { "IGooGeneric", "GooGeneric" })]
+    [InlineData("IOther", new string[] { })]
+    [InlineData("Goo", new string[] { "Goo" })]
+    [InlineData("GooAbstract", new string[] { "GooDerived" })]
+    [InlineData("GooDerived", new string[] { "GooDerived" })]
+    [InlineData("GooGeneric<int>", new string[] { "GooGeneric" })]
+    [InlineData("object", new string[] { "C", "Goo", "GooDerived", "GooGeneric" })]
+    [Theory, Trait(Traits.Feature, Traits.Features.TargetTypedCompletion)]
+    public async Task TestTargetTypeCompletionInCreationContext(string targetType, string[] expectedItems)
+    {
+        ShowTargetTypedCompletionFilter = true;
+
+        var markup =
+            $$"""
+            interface IGoo { }
+            interface IGooGeneric<T> : IGoo { }
+            interface IOther { }
+            class Goo : IGoo { }
+            abstract class GooAbstract : IGoo { }
+            class GooDerived : GooAbstract { }
+            class GooGeneric<T> : IGooGeneric<T> { }
+            
+            class C
+            {
+                void M1({{targetType}} arg) { }
+
+                void M2()
+                    => M1(new $$);
+            }
+            """;
+
+        (string Name, bool IsClass, string? DisplaySuffix)[] types = [
+            ("IGoo", false, null),
+            ("IGooGeneric", false, "<>"),
+            ("IOther", false, null),
+            ("Goo", true, null),
+            ("GooAbstract", true, null),
+            ("GooDerived", true, null),
+            ("GooGeneric", true, "<>"),
+            ("C", true, null)
+        ];
+
+        foreach (var item in types.Where(t => t.IsClass && expectedItems.Contains(t.Name)))
+            await VerifyItemExistsAsync(markup, item.Name, matchingFilters: [FilterSet.ClassFilter, FilterSet.TargetTypedFilter], displayTextSuffix: item.DisplaySuffix);
+
+        foreach (var item in types.Where(t => t.IsClass && !expectedItems.Contains(t.Name)))
+            await VerifyItemExistsAsync(markup, item.Name, matchingFilters: [FilterSet.ClassFilter], displayTextSuffix: item.DisplaySuffix);
+
+        foreach (var item in types.Where(t => !t.IsClass && expectedItems.Contains(t.Name)))
+            await VerifyItemExistsAsync(markup, item.Name, matchingFilters: [FilterSet.InterfaceFilter, FilterSet.TargetTypedFilter], displayTextSuffix: item.DisplaySuffix);
+
+        foreach (var item in types.Where(t => !t.IsClass && !expectedItems.Contains(t.Name)))
+            await VerifyItemExistsAsync(markup, item.Name, matchingFilters: [FilterSet.InterfaceFilter], displayTextSuffix: item.DisplaySuffix);
+    }
+
     [Fact, Trait(Traits.Feature, Traits.Features.KeywordRecommending)]
     public async Task TestTypesNotSuggestedInDeclarationDeconstruction()
     {
@@ -13398,15 +13457,16 @@ expectedDescriptionOrNull: null, sourceCodeKind: SourceCodeKind.Script);
         await VerifyAnyItemExistsAsync(source);
     }
 
-    [Fact]
-    public async Task AfterScopedInsideMethod()
+    [Theory, CombinatorialData]
+    public async Task AfterScopedInsideMethod(bool useRef)
     {
-        var source = """
+        var refKeyword = useRef ? "ref " : "";
+        var source = $$"""
             class C
             {
                 void M()
                 {
-                    scoped $$
+                    scoped {{refKeyword}}$$
                 }
             }
 
@@ -13415,24 +13475,54 @@ expectedDescriptionOrNull: null, sourceCodeKind: SourceCodeKind.Script);
         await VerifyItemExistsAsync(MakeMarkup(source), "MyRefStruct");
     }
 
-    [Fact]
-    public async Task AfterScopedGlobalStatement_FollowedByType()
+    [Theory, CombinatorialData]
+    public async Task AfterScopedGlobalStatement_FollowedByRefStruct(bool useRef)
     {
-        var source = """
-            scoped $$
+        var refKeyword = useRef ? "ref " : "";
+        var source = $$"""
+            scoped {{refKeyword}}$$
 
             ref struct MyRefStruct { }
             """;
         await VerifyItemExistsAsync(MakeMarkup(source), "MyRefStruct");
     }
 
-    [Fact]
-    public async Task AfterScopedGlobalStatement_NotFollowedByType()
+    [Theory, CombinatorialData]
+    public async Task AfterScopedGlobalStatement_FollowedByStruct(bool useRef)
     {
-        var source = """
+        var refKeyword = useRef ? "ref " : "";
+        var source = $$"""
             using System;
 
-            scoped $$
+            scoped {{refKeyword}}$$
+
+            struct S { }
+            """;
+        await VerifyItemExistsAsync(MakeMarkup(source), "ReadOnlySpan", displayTextSuffix: "<>");
+    }
+
+    [Theory, CombinatorialData]
+    public async Task AfterScopedGlobalStatement_FollowedByPartialStruct(bool useRef)
+    {
+        var refKeyword = useRef ? "ref " : "";
+        var source = $$"""
+            using System;
+
+            scoped {{refKeyword}}$$
+
+            partial struct S { }
+            """;
+        await VerifyItemExistsAsync(MakeMarkup(source), "ReadOnlySpan", displayTextSuffix: "<>");
+    }
+
+    [Theory, CombinatorialData]
+    public async Task AfterScopedGlobalStatement_NotFollowedByType(bool useRef)
+    {
+        var refKeyword = useRef ? "ref " : "";
+        var source = $"""
+            using System;
+
+            scoped {refKeyword}$$
             """;
 
         await VerifyItemExistsAsync(MakeMarkup(source), "ReadOnlySpan", displayTextSuffix: "<>");
@@ -14987,6 +15077,22 @@ expectedDescriptionOrNull: null, sourceCodeKind: SourceCodeKind.Script);
         await VerifyExpectedItemsAsync(markup, [
             ItemExpectation.Exists("X"),
             ItemExpectation.Exists("Y"),
+        ]);
+    }
+
+    [Theory, CombinatorialData]
+    public async Task PartialPropertyOrConstructor(
+        [CombinatorialValues("class", "struct", "record", "record class", "record struct", "interface")] string typeKind,
+        [CombinatorialValues("", "public", "private", "static", "extern")] string modifiers)
+    {
+        var markup = $$"""
+            partial {{typeKind}} C
+            {
+                {{modifiers}} partial $$
+            }
+            """;
+        await VerifyExpectedItemsAsync(markup, [
+            ItemExpectation.Exists("C"),
         ]);
     }
 

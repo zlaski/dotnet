@@ -39,6 +39,10 @@ namespace NuGet.Test.Utility
             ProjectPath = Path.Combine(solutionRoot, projectName, $"{projectName}{ProjectExt}");
             ProjectExtensionsPath = Path.Combine(solutionRoot, projectName, "obj");
             Type = type;
+            if (Type == ProjectStyle.PackageReference)
+            {
+                Properties.Add("RestoreProjectStyle", "PackageReference");
+            }
         }
 
         public string Version { get; set; } = "1.0.0";
@@ -165,6 +169,7 @@ namespace NuGet.Test.Utility
                 switch (Type)
                 {
                     case ProjectStyle.PackageReference:
+                    case ProjectStyle.PackagesConfig:
                         if (Properties.ContainsKey("NuGetLockFilePath"))
                         {
                             return Properties["NuGetLockFilePath"];
@@ -295,8 +300,7 @@ namespace NuGet.Test.Utility
         public void AddPackageToFramework(string packageFramework, params SimpleTestPackageContext[] packages)
         {
             var framework = Frameworks
-                .Where(f => f.Framework == NuGetFramework.Parse(packageFramework))
-                .First();
+                .First(f => f.Framework == NuGetFramework.Parse(packageFramework));
             framework.PackageReferences.AddRange(packages);
         }
 
@@ -311,8 +315,7 @@ namespace NuGet.Test.Utility
         public void AddPackageDownloadToFramework(string packageFramework, params SimpleTestPackageContext[] packages)
         {
             var framework = Frameworks
-                .Where(f => f.Framework == NuGetFramework.Parse(packageFramework))
-                .First();
+                .First(f => f.Framework == NuGetFramework.Parse(packageFramework));
             framework.PackageDownloads.AddRange(packages);
         }
 
@@ -321,17 +324,6 @@ namespace NuGet.Test.Utility
             foreach (var framework in Frameworks)
             {
                 framework.ProjectReferences.AddRange(projects);
-            }
-        }
-
-        /// <summary>
-        /// Package references from all TFMs
-        /// </summary>
-        public List<SimpleTestPackageContext> AllPackageDependencies
-        {
-            get
-            {
-                return Frameworks.SelectMany(f => f.PackageReferences).Distinct().ToList();
             }
         }
 
@@ -385,7 +377,6 @@ namespace NuGet.Test.Utility
         {
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
             context.Frameworks.AddRange(frameworks.Select(e => new SimpleTestProjectFrameworkContext(e)));
-            context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
         }
 
@@ -401,7 +392,6 @@ namespace NuGet.Test.Utility
                 frameworkContext.TargetAlias = e;
                 return frameworkContext;
             }));
-            context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
         }
 
@@ -413,7 +403,7 @@ namespace NuGet.Test.Utility
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
             context.Frameworks.AddRange(frameworks.Select(f => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(f)) { TargetAlias = f }));
             context.ToolingVersion15 = true;
-            context.Properties.Add("RestoreProjectStyle", "PackageReference");
+            context.Properties.Add("BuildWithNetFrameworkHostedCompiler", bool.FalseString);
             return context;
         }
 
@@ -427,15 +417,29 @@ namespace NuGet.Test.Utility
             return context;
         }
 
+        public static SimpleTestProjectContext CreatePackagesConfigProject(
+            string projectName,
+            string solutionRoot,
+            NuGetFramework framework)
+        {
+            var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackagesConfig, solutionRoot);
+            context.Frameworks.Add(new SimpleTestProjectFrameworkContext(framework));
+            return context;
+        }
+
         public static SimpleTestProjectContext CreateUAP(
             string projectName,
             string solutionRoot,
             NuGetFramework framework,
-            JObject projectJson)
+            string runtimeIdentifiers,
+            params SimpleTestPackageContext[] packages)
         {
-            var context = new SimpleTestProjectContext(projectName, ProjectStyle.ProjectJson, solutionRoot);
-            context.Frameworks.Add(new SimpleTestProjectFrameworkContext(framework));
-            context.ProjectJson = projectJson;
+            var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
+            context.Frameworks.Add(new SimpleTestProjectFrameworkContext(framework, packages));
+            if (string.IsNullOrEmpty(runtimeIdentifiers))
+            {
+                context.Properties.Add("RuntimeIdentifiers", runtimeIdentifiers);
+            }
             return context;
         }
 

@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable
-
 using System.Collections.Immutable;
 
 #if CODE_STYLE
@@ -15,7 +13,7 @@ using Microsoft.CodeAnalysis.Editing;
 namespace Microsoft.CodeAnalysis.CodeGeneration;
 
 internal sealed class CodeGenerationConstructorSymbol(
-    INamedTypeSymbol containingType,
+    INamedTypeSymbol? containingType,
     ImmutableArray<AttributeData> attributes,
     Accessibility accessibility,
     DeclarationModifiers modifiers,
@@ -27,9 +25,9 @@ internal sealed class CodeGenerationConstructorSymbol(
            refKind: RefKind.None,
            explicitInterfaceImplementations: default,
            name: string.Empty,
-           typeParameters: ImmutableArray<ITypeParameterSymbol>.Empty,
+           typeParameters: [],
            parameters: parameters,
-           returnTypeAttributes: ImmutableArray<AttributeData>.Empty)
+           returnTypeAttributes: [])
 {
     public override MethodKind MethodKind => MethodKind.Constructor;
 

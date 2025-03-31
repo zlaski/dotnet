@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -16,7 +15,6 @@ using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Test.Utilities;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Test.Utilities;
-using Roslyn.Utilities;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.EditAndContinue.UnitTests
@@ -84,7 +82,7 @@ namespace Microsoft.CodeAnalysis.EditAndContinue.UnitTests
                     defaultSeverity: DiagnosticSeverity.Warning,
                     isEnabledByDefault: true,
                     warningLevel: 0,
-                    customTags: ImmutableArray.Create("Test2"),
+                    customTags: ["Test2"],
                     properties: ImmutableDictionary<string, string?>.Empty,
                     document.Project.Id,
                     DiagnosticDataLocation.TestAccessor.Create(new(sourcePath, new(0, 0), new(0, 5)), document.Id, new("a.razor", new(10, 10), new(10, 15)), forceMappedPath: true),
@@ -100,7 +98,7 @@ namespace Microsoft.CodeAnalysis.EditAndContinue.UnitTests
                     defaultSeverity: DiagnosticSeverity.Warning,
                     isEnabledByDefault: true,
                     warningLevel: 0,
-                    customTags: ImmutableArray.Create("Test2"),
+                    customTags: ["Test2"],
                     properties: ImmutableDictionary<string, string?>.Empty,
                     document.Project.Id,
                     DiagnosticDataLocation.TestAccessor.Create(new(sourcePath, new(0, 0), new(0, 5)), document.Id, new(@"..\a.razor", new(10, 10), new(10, 15)), forceMappedPath: true),
@@ -117,7 +115,7 @@ namespace Microsoft.CodeAnalysis.EditAndContinue.UnitTests
                 defaultSeverity: DiagnosticSeverity.Error,
                 isEnabledByDefault: true,
                 warningLevel: 0,
-                customTags: ImmutableArray.Create("Test3"),
+                customTags: ["Test3"],
                 properties: ImmutableDictionary<string, string?>.Empty,
                 document.Project.Id,
                 new DiagnosticDataLocation(new(sourcePath, new(0, 1), new(0, 5)), document.Id),

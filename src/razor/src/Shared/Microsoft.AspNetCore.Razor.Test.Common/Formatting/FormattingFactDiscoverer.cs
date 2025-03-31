@@ -17,15 +17,24 @@ internal sealed class FormattingFactDiscoverer(IMessageSink diagnosticMessageSin
 
     public static IEnumerable<IXunitTestCase> CreateTestCases(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IMessageSink messageSink, object[]? dataRow = null)
     {
-        yield return CreateTestCase(shouldFlipLineEndings: false, forceRuntimeCodeGeneration: false);
-        yield return CreateTestCase(shouldFlipLineEndings: false, forceRuntimeCodeGeneration: true);
-
-        yield return CreateTestCase(shouldFlipLineEndings: true, forceRuntimeCodeGeneration: false);
-        yield return CreateTestCase(shouldFlipLineEndings: true, forceRuntimeCodeGeneration: true);
-
-        FormattingTestCase CreateTestCase(bool shouldFlipLineEndings, bool forceRuntimeCodeGeneration)
+        // Cohosting only has runtime code-gen, so the old formatting engine doesn't work with them
+        if (!testMethod.TestClass.TestCollection.TestAssembly.Assembly.Name.StartsWith("Microsoft.VisualStudio.LanguageServices.Razor"))
         {
-            return new FormattingTestCase(shouldFlipLineEndings, forceRuntimeCodeGeneration, messageSink, discoveryOptions.MethodDisplayOrDefault(), discoveryOptions.MethodDisplayOptionsOrDefault(), testMethod, dataRow);
+            yield return CreateTestCase(shouldFlipLineEndings: false, forceRuntimeCodeGeneration: false, useNewFormattingEngine: false);
+            yield return CreateTestCase(shouldFlipLineEndings: false, forceRuntimeCodeGeneration: true, useNewFormattingEngine: false);
+            yield return CreateTestCase(shouldFlipLineEndings: true, forceRuntimeCodeGeneration: false, useNewFormattingEngine: false);
+            yield return CreateTestCase(shouldFlipLineEndings: true, forceRuntimeCodeGeneration: true, useNewFormattingEngine: false);
+
+            yield return CreateTestCase(shouldFlipLineEndings: false, forceRuntimeCodeGeneration: false, useNewFormattingEngine: true);
+            yield return CreateTestCase(shouldFlipLineEndings: true, forceRuntimeCodeGeneration: false, useNewFormattingEngine: true);
+        }
+
+        yield return CreateTestCase(shouldFlipLineEndings: false, forceRuntimeCodeGeneration: true, useNewFormattingEngine: true);
+        yield return CreateTestCase(shouldFlipLineEndings: true, forceRuntimeCodeGeneration: true, useNewFormattingEngine: true);
+
+        FormattingTestCase CreateTestCase(bool shouldFlipLineEndings, bool forceRuntimeCodeGeneration, bool useNewFormattingEngine)
+        {
+            return new FormattingTestCase(shouldFlipLineEndings, forceRuntimeCodeGeneration, useNewFormattingEngine, messageSink, discoveryOptions.MethodDisplayOrDefault(), discoveryOptions.MethodDisplayOptionsOrDefault(), testMethod, dataRow);
         }
     }
 }

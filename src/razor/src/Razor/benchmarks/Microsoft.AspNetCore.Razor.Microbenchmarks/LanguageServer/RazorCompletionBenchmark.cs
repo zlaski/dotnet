@@ -7,11 +7,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
 using Microsoft.AspNetCore.Razor.LanguageServer.Completion.Delegation;
 using Microsoft.AspNetCore.Razor.LanguageServer.EndpointContracts;
 using Microsoft.AspNetCore.Razor.LanguageServer.Hosting;
+using Microsoft.AspNetCore.Razor.ProjectSystem;
+using Microsoft.AspNetCore.Razor.Telemetry;
 using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.CodeAnalysis.Razor.DocumentMapping;
 using Microsoft.CodeAnalysis.Razor.Logging;
@@ -40,14 +43,14 @@ public class RazorCompletionBenchmark : RazorLanguageServerBenchmarkBase
         var documentMappingService = lspServices.GetRequiredService<IDocumentMappingService>();
         var clientConnection = lspServices.GetRequiredService<IClientConnection>();
         var completionListCache = lspServices.GetRequiredService<CompletionListCache>();
+        var triggerAndCommitCharacters = lspServices.GetRequiredService<CompletionTriggerAndCommitCharacters>();
         var loggerFactory = lspServices.GetRequiredService<ILoggerFactory>();
 
-        var delegatedCompletionListProvider = new TestDelegatedCompletionListProvider(documentMappingService, clientConnection, completionListCache);
-        var completionListProvider = new CompletionListProvider(razorCompletionListProvider, delegatedCompletionListProvider);
+        var delegatedCompletionListProvider = new TestDelegatedCompletionListProvider(documentMappingService, clientConnection, completionListCache, triggerAndCommitCharacters);
+        var completionListProvider = new CompletionListProvider(razorCompletionListProvider, delegatedCompletionListProvider, triggerAndCommitCharacters);
         var configurationService = new DefaultRazorConfigurationService(clientConnection, loggerFactory);
         var optionsMonitor = new RazorLSPOptionsMonitor(configurationService, RazorLSPOptions.Default);
-
-        CompletionEndpoint = new RazorCompletionEndpoint(completionListProvider, telemetryReporter: null, optionsMonitor);
+        CompletionEndpoint = new RazorCompletionEndpoint(completionListProvider, triggerAndCommitCharacters, NoOpTelemetryReporter.Instance, optionsMonitor);
 
         var clientCapabilities = new VSInternalClientCapabilities
         {
@@ -140,12 +143,17 @@ public class RazorCompletionBenchmark : RazorLanguageServerBenchmarkBase
 
     private class TestDelegatedCompletionListProvider : DelegatedCompletionListProvider
     {
-        public TestDelegatedCompletionListProvider(IDocumentMappingService documentMappingService, IClientConnection clientConnection, CompletionListCache completionListCache)
-            : base(documentMappingService, clientConnection, completionListCache)
+        public TestDelegatedCompletionListProvider(
+            IDocumentMappingService documentMappingService,
+            IClientConnection clientConnection,
+            CompletionListCache completionListCache,
+            CompletionTriggerAndCommitCharacters triggerAndCommitCharacters)
+            : base(documentMappingService, clientConnection, completionListCache, triggerAndCommitCharacters)
         {
         }
 
-        public override Task<VSInternalCompletionList?> GetCompletionListAsync(
+        public override ValueTask<VSInternalCompletionList?> GetCompletionListAsync(
+            RazorCodeDocument codeDocument,
             int absoluteIndex,
             VSInternalCompletionContext completionContext,
             DocumentContext documentContext,
@@ -153,11 +161,6 @@ public class RazorCompletionBenchmark : RazorLanguageServerBenchmarkBase
             RazorCompletionOptions completionOptions,
             Guid correlationId,
             CancellationToken cancellationToken)
-        {
-            return Task.FromResult<VSInternalCompletionList?>(
-                new VSInternalCompletionList
-                {
-                });
-        }
+            => new(new VSInternalCompletionList());
     }
 }

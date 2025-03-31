@@ -3,7 +3,7 @@
 
 namespace Microsoft.EntityFrameworkCore.Query.Translations;
 
-public class MiscellaneousTranslationsSqliteTest : MiscellaneousTranslationsTestBase<BasicTypesQuerySqliteFixture>
+public class MiscellaneousTranslationsSqliteTest : MiscellaneousTranslationsRelationalTestBase<BasicTypesQuerySqliteFixture>
 {
     public MiscellaneousTranslationsSqliteTest(BasicTypesQuerySqliteFixture fixture, ITestOutputHelper testOutputHelper)
         : base(fixture)
@@ -12,73 +12,63 @@ public class MiscellaneousTranslationsSqliteTest : MiscellaneousTranslationsTest
         Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
-    #region Guid
+    #region Random
 
-    public override async Task Guid_new_with_constant(bool async)
+    public override async Task Random_on_EF_Functions(bool async)
     {
-        await base.Guid_new_with_constant(async);
+        await base.Random_on_EF_Functions(async);
 
         AssertSql(
             """
-SELECT "b"."Id", "b"."Bool", "b"."Byte", "b"."ByteArray", "b"."DateOnly", "b"."DateTime", "b"."DateTimeOffset", "b"."Decimal", "b"."Double", "b"."Enum", "b"."FlagsEnum", "b"."Float", "b"."Guid", "b"."Int", "b"."Long", "b"."Short", "b"."String", "b"."TimeOnly", "b"."TimeSpan"
+SELECT COUNT(*)
 FROM "BasicTypesEntities" AS "b"
-WHERE "b"."Guid" = 'DF36F493-463F-4123-83F9-6B135DEEB7BA'
+WHERE abs(random() / 9.2233720368547799E+18) >= 0.0 AND abs(random() / 9.2233720368547799E+18) < 1.0
 """);
     }
 
-    public override async Task Guid_new_with_parameter(bool async)
+    public override async Task Random_Shared_Next_with_no_args(bool async)
     {
-        await base.Guid_new_with_parameter(async);
+        await base.Random_Shared_Next_with_no_args(async);
 
-        AssertSql(
-            """
-@p='df36f493-463f-4123-83f9-6b135deeb7ba'
-
-SELECT "b"."Id", "b"."Bool", "b"."Byte", "b"."ByteArray", "b"."DateOnly", "b"."DateTime", "b"."DateTimeOffset", "b"."Decimal", "b"."Double", "b"."Enum", "b"."FlagsEnum", "b"."Float", "b"."Guid", "b"."Int", "b"."Long", "b"."Short", "b"."String", "b"."TimeOnly", "b"."TimeSpan"
-FROM "BasicTypesEntities" AS "b"
-WHERE "b"."Guid" = @p
-""");
+        AssertSql();
     }
 
-    public override async Task Guid_ToString_projection(bool async)
+    public override async Task Random_Shared_Next_with_one_arg(bool async)
     {
-        await base.Guid_ToString_projection(async);
+        await base.Random_Shared_Next_with_one_arg(async);
 
-        AssertSql(
-            """
-SELECT CAST("b"."Guid" AS TEXT)
-FROM "BasicTypesEntities" AS "b"
-""");
+        AssertSql();
     }
 
-    public override Task Guid_NewGuid(bool async)
-        => AssertTranslationFailed(() => base.Guid_NewGuid(async));
-
-    #endregion Guid
-
-    #region Byte array
-
-    public override async Task Byte_array_Length(bool async)
+    public override async Task Random_Shared_Next_with_two_args(bool async)
     {
-        await base.Byte_array_Length(async);
+        await base.Random_Shared_Next_with_two_args(async);
 
-        AssertSql(
-            """
-SELECT "b"."Id", "b"."Bool", "b"."Byte", "b"."ByteArray", "b"."DateOnly", "b"."DateTime", "b"."DateTimeOffset", "b"."Decimal", "b"."Double", "b"."Enum", "b"."FlagsEnum", "b"."Float", "b"."Guid", "b"."Int", "b"."Long", "b"."Short", "b"."String", "b"."TimeOnly", "b"."TimeSpan"
-FROM "BasicTypesEntities" AS "b"
-WHERE length("b"."ByteArray") = 4
-""");
+        AssertSql();
     }
 
-    // Array access. Issue #16428.
-    public override Task Byte_array_array_index(bool async)
-        => AssertTranslationFailed(() => base.Byte_array_array_index(async));
+    public override async Task Random_new_Next_with_no_args(bool async)
+    {
+        await base.Random_new_Next_with_no_args(async);
 
-    // Array access. Issue #16428.
-    public override Task Byte_array_First(bool async)
-        => AssertTranslationFailed(() => base.Byte_array_First(async));
+        AssertSql();
+    }
 
-    #endregion Byte array
+    public override async Task Random_new_Next_with_one_arg(bool async)
+    {
+        await base.Random_new_Next_with_one_arg(async);
+
+        AssertSql();
+    }
+
+    public override async Task Random_new_Next_with_two_args(bool async)
+    {
+        await base.Random_new_Next_with_two_args(async);
+
+        AssertSql();
+    }
+
+    #endregion Random
 
     #region Convert
 

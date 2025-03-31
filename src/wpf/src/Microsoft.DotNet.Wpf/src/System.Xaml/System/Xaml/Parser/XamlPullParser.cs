@@ -13,9 +13,9 @@ namespace MS.Internal.Xaml.Parser
 {
     internal class XamlPullParser
     {
-        XamlParserContext _context;
-        XamlScanner _xamlScanner;
-        XamlXmlReaderSettings _settings;
+        private XamlParserContext _context;
+        private XamlScanner _xamlScanner;
+        private XamlXmlReaderSettings _settings;
 
         public XamlPullParser(XamlParserContext context, XamlScanner scanner, XamlXmlReaderSettings settings)
         {
@@ -26,7 +26,7 @@ namespace MS.Internal.Xaml.Parser
 
         // =====================================================
 
-        //  Document ::= PREFIXDEFINITION* Element
+        // Document ::= PREFIXDEFINITION* Element
         //  Element ::= EmptyElement | (StartElement ElementBody)
         //  EmptyElement ::= EMPTYELEMENT DIRECTIVE* ATTRIBUTE*
         //  StartElement ::= ELEMENT DIRECTIVE*
@@ -970,7 +970,7 @@ namespace MS.Internal.Xaml.Parser
             _context.CurrentInContainerDirective = true;
 
             var startProperty = new XamlNode(XamlNodeType.StartMember, XamlLanguage.Items);
-            //SetLineInfo(startProperty);  // No line number info for implicit properties.
+            // SetLineInfo(startProperty);  // No line number info for implicit properties.
             return startProperty;
         }
 
@@ -1246,7 +1246,7 @@ namespace MS.Internal.Xaml.Parser
     }
 
     [Serializable]  // FxCop advised this be Serializable.
-    class XamlUnexpectedParseException : XamlParseException
+    internal class XamlUnexpectedParseException : XamlParseException
     {
         public XamlUnexpectedParseException() { }
 

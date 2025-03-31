@@ -1,12 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 using System.Windows.Xps.Packaging;
 using System.Printing;
-
-#pragma warning disable 1634, 1691 //Allows suppression of certain PreSharp messages
 
 namespace System.Windows.Xps.Serialization
 {
@@ -237,9 +234,7 @@ namespace System.Windows.Xps.Serialization
             }
         }
 
-        XpsSerializationXpsDriverDocEventArgs
-        OnXpsDriverDocEvent(
-            )
+        private XpsSerializationXpsDriverDocEventArgs OnXpsDriverDocEvent()
         {
             XpsSerializationXpsDriverDocEventArgs e = new XpsSerializationXpsDriverDocEventArgs(_documentEvent,
                                                                                                 _currentCount,

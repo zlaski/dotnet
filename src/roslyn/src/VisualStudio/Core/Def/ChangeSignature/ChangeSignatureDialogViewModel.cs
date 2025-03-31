@@ -15,7 +15,6 @@ using Microsoft.CodeAnalysis.ChangeSignature;
 using Microsoft.CodeAnalysis.Editor.Shared.Extensions;
 using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.Notification;
-using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.VisualStudio.LanguageServices.Implementation.Utilities;
 using Microsoft.VisualStudio.Text.Classification;
 using Roslyn.Utilities;
@@ -280,8 +279,8 @@ internal partial class ChangeSignatureDialogViewModel : AbstractNotifyPropertyCh
     {
         return new ParameterConfiguration(
             _originalParameterConfiguration.ThisParameter,
-            _parametersWithoutDefaultValues.Where(p => !p.IsRemoved).Select(p => p.Parameter).ToImmutableArray(),
-            _parametersWithDefaultValues.Where(p => !p.IsRemoved).Select(p => p.Parameter).ToImmutableArray(),
+            [.. _parametersWithoutDefaultValues.Where(p => !p.IsRemoved).Select(p => p.Parameter)],
+            [.. _parametersWithDefaultValues.Where(p => !p.IsRemoved).Select(p => p.Parameter)],
             (_paramsParameter == null || _paramsParameter.IsRemoved) ? null : (ExistingParameter)_paramsParameter.Parameter,
             selectedIndex: -1);
     }

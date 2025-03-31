@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -246,10 +246,7 @@ namespace System.Windows.Input.StylusWisp
                 throw new InvalidOperationException(SR.Format(SR.Invalid_IInputElement, doStylusCapture.GetType()));
             }
 
-            if (doStylusCapture != null)
-            {
-                doStylusCapture.VerifyAccess();
-            }
+            doStylusCapture?.VerifyAccess();
 
             bool success = false;
 
@@ -360,13 +357,15 @@ namespace System.Windows.Input.StylusWisp
                                                                              InAir ? RawStylusActions.InAirMove : RawStylusActions.Move,
                                                                              TabletDevice.Id,
                                                                              Id,
-                                                                             data);
+                                                                             data)
+                        {
+                            Synchronized = true
+                        };
 
-
-                        report.Synchronized = true;
-
-                        InputReportEventArgs inputReportEventArgs = new InputReportEventArgs(StylusDevice, report);
-                        inputReportEventArgs.RoutedEvent = InputManager.PreviewInputReportEvent;
+                        InputReportEventArgs inputReportEventArgs = new InputReportEventArgs(StylusDevice, report)
+                        {
+                            RoutedEvent = InputManager.PreviewInputReportEvent
+                        };
 
                         _stylusLogic.InputManagerProcessInputEventArgs(inputReportEventArgs);
                     }
@@ -625,16 +624,20 @@ namespace System.Windows.Input.StylusWisp
                 // Send the LostStylusCapture and GotStylusCapture events.
                 if (oldStylusCapture != null)
                 {
-                    StylusEventArgs lostCapture = new StylusEventArgs(StylusDevice, timestamp);
-                    lostCapture.RoutedEvent = Stylus.LostStylusCaptureEvent;
-                    lostCapture.Source = oldStylusCapture;
+                    StylusEventArgs lostCapture = new StylusEventArgs(StylusDevice, timestamp)
+                    {
+                        RoutedEvent = Stylus.LostStylusCaptureEvent,
+                        Source = oldStylusCapture
+                    };
                     _stylusLogic.InputManagerProcessInputEventArgs(lostCapture);
                 }
                 if (_stylusCapture != null)
                 {
-                    StylusEventArgs gotCapture = new StylusEventArgs(StylusDevice, timestamp);
-                    gotCapture.RoutedEvent = Stylus.GotStylusCaptureEvent;
-                    gotCapture.Source = _stylusCapture;
+                    StylusEventArgs gotCapture = new StylusEventArgs(StylusDevice, timestamp)
+                    {
+                        RoutedEvent = Stylus.GotStylusCaptureEvent,
+                        Source = _stylusCapture
+                    };
                     _stylusLogic.InputManagerProcessInputEventArgs(gotCapture);
                 }
 
@@ -1689,8 +1692,10 @@ namespace System.Windows.Input.StylusWisp
                                                      actions,
                                                      (int)pt.X, (int)pt.Y, 0, IntPtr.Zero);
 
-                        InputReportEventArgs inputReportArgs = new InputReportEventArgs(StylusDevice, mouseInputReport);
-                        inputReportArgs.RoutedEvent = InputManager.PreviewInputReportEvent;
+                        InputReportEventArgs inputReportArgs = new InputReportEventArgs(StylusDevice, mouseInputReport)
+                        {
+                            RoutedEvent = InputManager.PreviewInputReportEvent
+                        };
                         _stylusLogic.InputManagerProcessInputEventArgs(inputReportArgs);
                     }
                 }
@@ -1943,49 +1948,49 @@ namespace System.Windows.Input.StylusWisp
 
         /////////////////////////////////////////////////////////////////////
 
-        WispTabletDevice _tabletDevice;
-        string _sName;
-        int _id;
-        bool _fInverted;
-        bool _fInRange;
-        StylusButtonCollection _stylusButtonCollection;
-        IInputElement _stylusOver;
+        private WispTabletDevice _tabletDevice;
+        private string _sName;
+        private int _id;
+        private bool _fInverted;
+        private bool _fInRange;
+        private StylusButtonCollection _stylusButtonCollection;
+        private IInputElement _stylusOver;
 #if MULTICAPTURE
         private DeferredElementTreeState _stylusOverTreeState;
 #endif
 
-        IInputElement _stylusCapture;
-        CaptureMode _captureMode;
+        private IInputElement _stylusCapture;
+        private CaptureMode _captureMode;
 #if MULTICAPTURE
         private DeferredElementTreeState _stylusCaptureWithinTreeState;
 #endif
-        StylusPoint _rawPosition = new StylusPoint(0, 0);
-        Point _rawElementRelativePosition = new Point(0, 0);
-        StylusPointCollection _eventStylusPoints;
+        private StylusPoint _rawPosition = new StylusPoint(0, 0);
+        private Point _rawElementRelativePosition = new Point(0, 0);
+        private StylusPointCollection _eventStylusPoints;
 
         private PresentationSource _inputSource;
 
         private PenContext _activePenContext;
 
-        bool _needToSendMouseDown;
+        private bool _needToSendMouseDown;
         private Point _lastMouseScreenLocation = new Point(0, 0);
         private Point _lastScreenLocation = new Point(0, 0);
 
-        bool _fInAir = true;
-        bool _fLeftButtonDownTrigger = true; // default to left button down
-        bool _fGestureWasFired = true; // StylusDown resets this.
-        bool _fBlockMouseMoveChanges; // StylusDown sets to true, SystemGesture & StylusUp sets to false.
-        bool _fDetectedDrag; // StylusDown resets this.  Used for generating DoubleTap gestures.
+        private bool _fInAir = true;
+        private bool _fLeftButtonDownTrigger = true; // default to left button down
+        private bool _fGestureWasFired = true; // StylusDown resets this.
+        private bool _fBlockMouseMoveChanges; // StylusDown sets to true, SystemGesture & StylusUp sets to false.
+        private bool _fDetectedDrag; // StylusDown resets this.  Used for generating DoubleTap gestures.
 
         // Used to track the promoted mouse state.
-        MouseButtonState _promotedMouseState;
+        private MouseButtonState _promotedMouseState;
 
         // real time pen input info that is tracked per stylus device
-        StylusPlugInCollection _nonVerifiedTarget;
-        StylusPlugInCollection _verifiedTarget;
+        private StylusPlugInCollection _nonVerifiedTarget;
+        private StylusPlugInCollection _verifiedTarget;
 
-        object _rtiCaptureChanged = new object();
-        StylusPlugInCollection _stylusCapturePlugInCollection;
+        private object _rtiCaptureChanged = new object();
+        private StylusPlugInCollection _stylusCapturePlugInCollection;
 
 
         // Information used to distinguish double-clicks (actually, multi clicks) from

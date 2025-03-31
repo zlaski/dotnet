@@ -7,9 +7,14 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -79,10 +84,11 @@ namespace NuGet.CommandLine.XPlat
             return new Project(projectRootElement, globalProperties, toolsVersion: null);
         }
 
-        internal static IEnumerable<string> GetProjectsFromSolution(string solutionPath)
+        internal static async Task<IEnumerable<string>> GetProjectsFromSolution(string solutionPath, CancellationToken cancellationToken = default)
         {
-            var sln = SolutionFile.Parse(solutionPath);
-            return sln.ProjectsInOrder.Select(p => p.AbsolutePath);
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
+            SolutionModel solution = await serializer.OpenAsync(solutionPath, cancellationToken);
+            return solution.SolutionProjects.Select(p => p.FilePath);
         }
 
         /// <summary>
@@ -90,7 +96,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <returns>List of project paths. Returns null if path was a directory with none or multiple project/solution files.</returns>
         /// <exception cref="ArgumentException">Throws an exception if the directory has none or multiple project/solution files.</exception>
-        internal static IEnumerable<string> GetListOfProjectsFromPathArgument(string path)
+        internal static async Task<IEnumerable<string>> GetListOfProjectsFromPathArgumentAsync(string path, CancellationToken cancellationToken = default)
         {
             string fullPath = Path.GetFullPath(path);
 
@@ -116,7 +122,7 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return XPlatUtility.IsSolutionFile(projectOrSolutionFile)
-                        ? MSBuildAPIUtility.GetProjectsFromSolution(projectOrSolutionFile).Where(f => File.Exists(f))
+                        ? (await MSBuildAPIUtility.GetProjectsFromSolution(projectOrSolutionFile, cancellationToken)).Where(f => File.Exists(f))
                         : [projectOrSolutionFile];
         }
 
@@ -229,7 +235,7 @@ namespace NuGet.CommandLine.XPlat
                 return false;
             }
 
-            ProjectItem packageReference = project.Items.Where(item => item.ItemType == PACKAGE_REFERENCE_TYPE_TAG && item.EvaluatedInclude.Equals(packageReferenceArgs.PackageId)).LastOrDefault();
+            ProjectItem packageReference = project.Items.LastOrDefault(item => item.ItemType == PACKAGE_REFERENCE_TYPE_TAG && item.EvaluatedInclude.Equals(packageReferenceArgs.PackageId));
             ProjectItem packageVersionInProps = packageVersions.LastOrDefault();
             var versionOverride = dependenciesWithVersionOverride?.FirstOrDefault(d => d.Name.Equals(packageReferenceArgs.PackageId));
 
@@ -793,7 +799,7 @@ namespace NuGet.CommandLine.XPlat
                         {
                             try
                             { // In case proj and assets file are not in sync and some refs were deleted
-                                installedPackage = projectPackages.Where(p => p.Name.Equals(topLevelPackage.Name, StringComparison.Ordinal)).First();
+                                installedPackage = projectPackages.First(p => p.Name.Equals(topLevelPackage.Name, StringComparison.Ordinal));
                             }
                             catch (Exception)
                             {

@@ -11,6 +11,7 @@
     <!-- Arcade dependencies -->
     <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Archives" Version="$(MicrosoftDotNetBuildTasksArchivesVersion)" />
     <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+    <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Templating" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" />
 
     <!-- CoreFx dependencies -->
     <PackageVersion Include="System.Data.DataSetExtensions" Version="$(SystemDataDataSetExtensionsVersion)" />
@@ -58,11 +59,9 @@
     <PackageVersion Include="System.Threading.AccessControl" Version="$(SystemThreadingAccessControlVersion)" />
 
     <!-- WCF dependencies -->
-    <PackageVersion Include="System.ServiceModel.Duplex" Version="$(SystemServiceModelVersion)" />
     <PackageVersion Include="System.ServiceModel.Http" Version="$(SystemServiceModelVersion)" />
     <PackageVersion Include="System.ServiceModel.NetTcp" Version="$(SystemServiceModelVersion)" />
     <PackageVersion Include="System.ServiceModel.Primitives" Version="$(SystemServiceModelVersion)" />
-    <PackageVersion Include="System.ServiceModel.Security" Version="$(SystemServiceModelVersion)" />
     <PackageVersion Include="System.Web.Services.Description" Version="$(SystemServiceModelVersion)" />
 
     <!-- WinForms dependencies -->

@@ -646,6 +646,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="needs-review-translation">NETSDK1115: Das aktuelle .NET SDK unterstützt das .NET Framework nur, wenn .NET SDK-Standardwerte verwendet werden. Wahrscheinlich liegt ein Konflikt zwischen der CLRSupport-Eigenschaft des C++-/CLI-Projekts und TargetFramework vor.</target>
         <note>{StrBegins="NETSDK1115: "}</note>
       </trans-unit>
+      <trans-unit id="NativeCompilationRequiresPublishing">
+        <source>NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</source>
+        <target state="new">NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</target>
+        <note>{StrBegins="NETSDK1225: "}</note>
+      </trans-unit>
       <trans-unit id="Net9NotCompatibleWithDev1711">
         <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
         <target state="translated">NETSDK1223: Die Ausrichtung auf .NET 9.0 oder höher in Visual Studio 2022 17.11 wird nicht unterstützt.</target>
@@ -785,6 +790,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1093: Project tools (DotnetCliTool) only support targeting .NET Core 2.2 and lower.</source>
         <target state="needs-review-translation">NETSDK1093: Projekttools (DotnetCliTool) unterstützen als Ziel nur .NET Core 2.2 und früher.</target>
         <note>{StrBegins="NETSDK1093: "}</note>
+      </trans-unit>
+      <trans-unit id="PrunePackageDataNotFound">
+        <source>NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</source>
+        <target state="new">NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</target>
+        <note>{StrBegins="NETSDK1226: "}</note>
       </trans-unit>
       <trans-unit id="PublishProfileNotPresent">
         <source>NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name.</source>
@@ -1027,11 +1037,6 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy</source>
         <target state="needs-review-translation">NETSDK1057: Sie verwenden eine Vorschauversion von .NET. Weitere Informationen: https://aka.ms/dotnet-support-policy</target>
         <note>{StrBegins="NETSDK1057: "}</note>
-      </trans-unit>
-      <trans-unit id="UsingPreviewUseUwpFeature">
-        <source>NETSDK1219: UseUwp and all associated functionality are currently experimental and not officially supported.</source>
-        <target state="needs-review-translation">NETSDK1219: UseUwp und alle zugehörigen Funktionen sind derzeit experimentell und werden nicht offiziell unterstützt.</target>
-        <note>{StrBegins="NETSDK1219: "}</note>
       </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
         <source>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</source>

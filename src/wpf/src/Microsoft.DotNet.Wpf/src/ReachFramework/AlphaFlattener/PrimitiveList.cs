@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -26,7 +26,7 @@ namespace Microsoft.Internal.AlphaFlattener
         #region Public Methods
 
 #if DEBUG
-        static int overlapcount;
+        private static int overlapcount;
 
         internal static string LeftPad(object obj, int len)
         {
@@ -54,13 +54,11 @@ namespace Microsoft.Internal.AlphaFlattener
             {
                 s = ((Double)obj).ToString("F1", CultureInfo.InvariantCulture);
             }
-            else if (obj is Rect)
+            else if (obj is Rect r)
             {
-                Rect r = (Rect) obj;
-
-                return " [" + LeftPad(r.Left,   6) + ' '
-                            + LeftPad(r.Top,    6) + ' '
-                            + LeftPad(r.Width,  6) + ' '
+                return " [" + LeftPad(r.Left, 6) + ' '
+                            + LeftPad(r.Top, 6) + ' '
+                            + LeftPad(r.Width, 6) + ' '
                             + LeftPad(r.Height, 6) + "]";
             }
             else
@@ -306,7 +304,7 @@ namespace Microsoft.Internal.AlphaFlattener
             }
         }
 
-        static bool OrderedInsert(List<int> list, int n)
+        private static bool OrderedInsert(List<int> list, int n)
         {
             int pos = list.Count;
 

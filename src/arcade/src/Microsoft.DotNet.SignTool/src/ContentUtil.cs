@@ -11,6 +11,9 @@ using System.Reflection.Metadata;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
+using System.Diagnostics;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.DotNet.SignTool
 {
@@ -57,27 +60,6 @@ namespace Microsoft.DotNet.SignTool
 
         }
 
-        /// <summary>
-        /// Returns true if the PE file meets all of the pre-conditions to be Open Source Signed.
-        /// Returns false and logs msbuild errors otherwise.
-        /// </summary>
-        public static bool IsPublicSigned(PEReader peReader)
-        {
-            if (!peReader.HasMetadata)
-            {
-                return false;
-            }
-
-            var mdReader = peReader.GetMetadataReader();
-            if (!mdReader.IsAssembly)
-            {
-                return false;
-            }
-
-            CorHeader header = peReader.PEHeaders.CorHeader;
-            return (header.Flags & CorFlags.StrongNameSigned) == CorFlags.StrongNameSigned;
-        }
-
         public static bool IsManaged(string filePath)
         {
             try
@@ -102,17 +84,6 @@ namespace Microsoft.DotNet.SignTool
             using (var peReader = new PEReader(stream))
             {
                 return ((int)peReader.PEHeaders.CorHeader.Flags & CROSSGEN_FLAG) == CROSSGEN_FLAG;
-            }
-        }
-
-        public static bool IsAuthenticodeSigned(Stream assemblyStream)
-        {
-            using (var peReader = new PEReader(assemblyStream))
-            {
-                var headers = peReader.PEHeaders;
-                var entry = headers.PEHeader.CertificateTableDirectory;
-
-                return entry.Size > 0;
             }
         }
 

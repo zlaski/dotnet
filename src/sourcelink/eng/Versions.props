@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- This repo version -->
-    <VersionPrefix>9.0.0</VersionPrefix>
+    <VersionPrefix>10.0.0</VersionPrefix>
     <PreReleaseVersionLabel>beta</PreReleaseVersionLabel>
     <!-- Opt-in repo features -->
     <UsingToolSymbolUploader>true</UsingToolSymbolUploader>
@@ -11,14 +11,13 @@
   <PropertyGroup>
     <!-- commandline -->
     <SystemCommandLineVersion>2.0.0-beta4.23307.1</SystemCommandLineVersion>
-    <SystemCommandLineNamingConventionBinderVersion>2.0.0-beta4.23307.1</SystemCommandLineNamingConventionBinderVersion>
-    <SystemCommandLineRenderingVersion>0.4.0-alpha.23307.1</SystemCommandLineRenderingVersion>
     <!-- msbuild -->
     <MicrosoftBuildVersion>17.8.3</MicrosoftBuildVersion>
     <MicrosoftBuildTasksCoreVersion>17.8.3</MicrosoftBuildTasksCoreVersion>
+    <MicrosoftIORedistVersion>6.0.1</MicrosoftIORedistVersion>
     <!-- nuget -->
-    <NuGetVersioningVersion>5.7.0</NuGetVersioningVersion>
+    <NuGetVersioningVersion>6.12.1</NuGetVersioningVersion>
     <!-- runtime -->
-    <SystemTextJsonVersion>7.0.3</SystemTextJsonVersion>
+    <SystemTextJsonVersion>8.0.5</SystemTextJsonVersion>
   </PropertyGroup>
 </Project>

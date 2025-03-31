@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(NetCurrent)</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageSourceGeneratorTaskAssembly>$(ArtifactsBinDir)PackageSourceGeneratorTask\$(Configuration)\$(NetCurrent)\PackageSourceGeneratorTask.dll</PackageSourceGeneratorTaskAssembly>
     <!-- The packages output directory. -->
     <PackagesTargetDirectory Condition="'$(PackageType)' != 'text'">$(RepoRoot)src\referencePackages\src\</PackagesTargetDirectory>
@@ -11,7 +12,7 @@
     <ExcludeTargetFrameworks>monoandroid*;monotouch*;net20;net35;net4*;netcore50;netcoreapp2.*;portable*;uap*;win8;win81;wp8;wpa81;xamarin*</ExcludeTargetFrameworks>
     <!-- The following target frameworks should be excluded even though they are supported by the current SDK because there is no need to have them.
          Only exclude them when target frameworks to include aren't provided. -->
-    <ExcludeTargetFrameworks Condition="'$(IncludeTargetFrameworks)' == ''">$(ExcludeTargetFrameworks);netcoreapp3.1</ExcludeTargetFrameworks>
+    <ExcludeTargetFrameworks Condition="'$(IncludeTargetFrameworks)' == ''">$(ExcludeTargetFrameworks);netcoreapp3.1;netstandard1*</ExcludeTargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackageName)' != '' and '$(PackageVersion)' != ''">
@@ -25,27 +26,19 @@
     <PackageTargetDirectory>$([MSBuild]::NormalizeDirectory('$(BasePackageTargetDirectory)', '$(PackageVersion)'))</PackageTargetDirectory>
   </PropertyGroup>
 
+  <!-- The list of allowed external dependencies -->
+  <ItemGroup>
+    <AllowedPackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="PackageSourceGeneratorTask\PackageSourceGeneratorTask.csproj"
                       ReferenceOutputAssembly="false"
                       UndefineProperties="PackageType;PackageCSV;PackageName;PackageVersion;PackageTargetFrameworks" />
   </ItemGroup>
 
-  <!-- Parse the passed in CSV file into PackageInfo items with metadata. -->
-  <ItemGroup Condition="'$(PackageCSV)' != ''">
-    <CsvContentLine Include="$([System.Text.RegularExpressions.Regex]::Split('$([System.IO.File]::ReadAllText('$(PackageCSV)'))', '\r\n|\n'))" />
-    <PackageInfo Include="@(CsvContentLine)"
-                 PackageName="$([System.String]::Copy('%(Identity)').Split(',')[0])"
-                 PackageVersion="$([System.String]::Copy('%(Identity)').Split(',')[1])">
-      <PackageTargetFrameworks Condition="$([System.String]::Copy('%(Identity)').Split(',').Length) == '3'">$([System.String]::Copy('%(Identity)').Split(',')[2])</PackageTargetFrameworks>
-    </PackageInfo>
-  </ItemGroup>
-
   <!-- Download the specified packages as part of the project's restore. -->
   <ItemGroup>
-    <PackageDownload Include="@(PackageInfo->Metadata('PackageName'))"
-                     Version="[%(PackageVersion)]"
-                     Condition="'@(PackageInfo)' != ''" />
     <PackageDownload Include="$(PackageName)"
                      Version="[$(PackageVersion)]"
                      Condition="'$(PackageName)' != '' and '$(PackageVersion)' != ''" />
@@ -55,6 +48,80 @@
   <Target Name="ValidateRestoreCsvContentProperties">
     <Error Text="The 'PackageName' and 'PackageVersion' or 'PackageCSV' properties must be set!"
            Condition="('$(PackageName)' == '' or '$(PackageVersion)' == '') and '$(PackageCSV)' == ''" />
+  </Target>
+
+  <!-- Parse the passed in CSV file into PackageInfo items with metadata.
+       An inline task is used beccause the PackageSourceGeneratorTask isn't build until after CollectPackageDownloads. -->
+  <UsingTask TaskName="ParsePackagesCsv" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <CsvPath ParameterType="System.String" Required="true" />
+      <PackageInfo ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+      <GroupedPackageInfo ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+        string[] lines = File.ReadAllLines(CsvPath);
+        if (lines.Length == 0)
+        {
+            Log.LogError($"CsvPath '{CsvPath}' is empty.");
+            return false;
+        }
+
+        string[][] csvParts = lines.Select(line =>
+            {
+                string[] parts = line.Split(',');
+
+                if (parts.Length != 2 && parts.Length != 3)
+                {
+                    Log.LogError($"CsvPath '{CsvPath}' contains an invalid line: '{line}'.");
+                    return null;
+                }
+
+                return parts;
+            })
+            .Where(item => item is not null)
+            .ToArray()!;
+
+        PackageInfo = csvParts.Select(parts => new TaskItem(parts[0], new Dictionary<string, string>
+            {
+                { "PackageName", parts[0] },
+                { "PackageVersion", parts[1] },
+                { "TargetFrameworks", parts.Length == 3 ? parts[2] : string.Empty }
+            }))
+            .ToArray();
+
+        GroupedPackageInfo = csvParts.GroupBy(parts => parts[0])
+            .Select(group => new TaskItem(group.Key, new Dictionary<string, string>
+                {
+                    { "PackageName", group.Key },
+                    { "PackageVersions", group.Select(parts => $"[{parts[1]}]").Aggregate((working, next) => $"{working};{next}") }
+                }))
+            .ToArray();
+
+        return !Log.HasLoggedErrors;
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="ParseCsv"
+          Condition="'$(PackageCSV)' != ''"
+          AfterTargets="ValidateRestoreCsvContentProperties">
+    <ParsePackagesCsv CsvPath="$(PackageCSV)">
+      <Output TaskParameter="PackageInfo" ItemName="PackageInfo" />
+      <Output TaskParameter="GroupedPackageInfo" ItemName="GroupedPackageInfo" />
+    </ParsePackagesCsv>
+
+    <ItemGroup>
+      <PackageDownload Include="@(GroupedPackageInfo->Metadata('PackageName'))"
+              Version="%(PackageVersions)"
+              Condition="'@(GroupedPackageInfo)' != ''" />
+    </ItemGroup>
   </Target>
 
   <!-- The entry point target that runs when a CSV file is provided which invokes the
@@ -92,12 +159,17 @@
     <Message Text="%0D%0A$(MSBuildProjectName) -> Generating package source for $(PackageName) (v$(PackageVersion)$(PackageTargetFrameworksMessage))..."
              Importance="high" />
 
-    <!-- Remove the target directory to support regenerate scenario in case existing files are removed. -->
-    <RemoveDir Directories="$(PackageTargetDirectory)" />
+    <!-- Remove the target directory to support regenerate scenario in case existing files are removed.
+         Preserve the prescribed customization files. -->
+    <ItemGroup>
+      <FilesToRemove Include="$(PackageTargetDirectory)**\*.*"
+                     Exclude="$(PackageTargetDirectory)\$(CustomizationsPropsFile);$(PackageTargetDirectory)**\$(CustomizationsSourceFile)" />
+    </ItemGroup>
+    <Delete Files="@(FilesToRemove)" />
   </Target>
 
   <!-- Retrieve compile items, placeholder files, package dependencies and framework references with their target framework. -->
-  <UsingTask TaskName="GetPackageItems" AssemblyFile="$(PackageSourceGeneratorTaskAssembly)" />
+  <UsingTask TaskName="GetPackageItems" AssemblyFile="$(PackageSourceGeneratorTaskAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="GetPackageItems">
     <PropertyGroup>
       <PackageNupkgPath>$(RestoredPackageDirectory)$(PackageName.ToLowerInvariant()).$(PackageVersion).nupkg</PackageNupkgPath>
@@ -265,7 +337,7 @@
   </Target>
 
   <!-- Generate the final reference package project and write it to the package target directory. -->
-  <UsingTask TaskName="GenerateProject" AssemblyFile="$(PackageSourceGeneratorTaskAssembly)" />
+  <UsingTask TaskName="GenerateProject" AssemblyFile="$(PackageSourceGeneratorTaskAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="GeneratePackageProject"
           DependsOnTargets="GetPackageItems"
           Condition="'@(PackageCompileItem)' != '' or '$(PackageType)' == 'text'">
@@ -275,18 +347,21 @@
     </PropertyGroup>
 
     <GenerateProject PackageId="$(RealPackageId)"
+                     PackageVersion="$(PackageVersion)"
                      ProjectTemplate="$(PackageProjectTemplate)"
+                     ProjectRoot="$(PackagesTargetDirectory)"
                      TargetPath="$(PackageProjectTargetPath)"
                      CompileItems="@(PackageCompileItem)"
                      PackageDependencies="@(PackageDependency)"
-                     FrameworkReferences="@(PackageFrameworkReference)" />
+                     FrameworkReferences="@(PackageFrameworkReference)"
+                     AllowedPackageReference="@(AllowedPackageReference)" />
 
     <Message Text="$(MSBuildProjectName) -> $(PackageProjectTargetPath)"
              Importance="high" />
   </Target>
 
   <!-- Rewrite nuspec and copy to target directory. -->
-  <UsingTask TaskName="RewriteNuspec" AssemblyFile="$(PackageSourceGeneratorTaskAssembly)" />
+  <UsingTask TaskName="RewriteNuspec" AssemblyFile="$(PackageSourceGeneratorTaskAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="RewriteNuspec"
           Condition="'@(PackageCompileItem)' != '' or '$(PackageType)' == 'text'">
     <PropertyGroup>
@@ -334,13 +409,9 @@
     
     <!-- External packages aren't visited as they shouldn't be added to SBRP. --> 
     <ItemGroup>
-      <ExternalPackage Include="Newtonsoft.Json" />
-    </ItemGroup>
-
-    <ItemGroup>
       <FilteredPackageDependency Include="@(PackageDependency)"
                                  Exclude="@(TargetingPackage);
-                                          @(ExternalPackage)" />
+                                          @(AllowedPackageReference)" />
     </ItemGroup>
 
     <MSBuild Projects="$(MSBuildThisFileFullPath)"

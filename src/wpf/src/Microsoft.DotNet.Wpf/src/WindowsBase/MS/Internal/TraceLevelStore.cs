@@ -105,8 +105,7 @@ namespace MS.Internal
             public override int GetHashCode()
             {
 #if DEBUG
-                WeakReference wr = _element as WeakReference;
-                object element = (wr != null) ? wr.Target : _element;
+                object element = (_element is WeakReference wr) ? wr.Target : _element;
                 if (element != null)
                 {
                     int hashcode = element.GetHashCode();
@@ -153,8 +152,8 @@ namespace MS.Internal
                 return !key1.Equals(key2);
             }
 
-            object _element;            // lookup: direct ref.  In table: WeakRef
-            int _hashcode;              // cached, in case source is GC'd
+            private object _element;            // lookup: direct ref.  In table: WeakRef
+            private int _hashcode;              // cached, in case source is GC'd
         }
 
         #endregion Table Keys

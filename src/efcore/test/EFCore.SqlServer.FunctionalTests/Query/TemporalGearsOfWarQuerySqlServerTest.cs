@@ -220,22 +220,6 @@ ORDER BY [g].[Nickname], [g].[SquadId], [g0].[Nickname], [g0].[SquadId]
 """);
     }
 
-    public override void Byte_array_filter_by_length_parameter_compiled()
-    {
-        // Test infra issue
-        Assert.Throws<EqualException>(
-            base.Byte_array_filter_by_length_parameter_compiled);
-
-        AssertSql(
-            """
-@byteArrayParam='0x2A80' (Size = 8000)
-
-SELECT COUNT(*)
-FROM [Squads] AS [s]
-WHERE CAST(DATALENGTH([s].[Banner]) AS int) = CAST(DATALENGTH(@byteArrayParam) AS int)
-""");
-    }
-
     public override async Task Basic_query_gears(bool async)
     {
         await base.Basic_query_gears(async);
@@ -679,18 +663,6 @@ FROM [Tags] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [t]
 LEFT JOIN [Gears] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [g] ON [t].[GearNickName] = [g].[Nickname] AND [t].[GearSquadId] = [g].[SquadId]
 LEFT JOIN [Squads] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [s] ON [g].[SquadId] = [s].[Id]
 GROUP BY [g].[HasSoulPatch], [s].[Name]
-""");
-    }
-
-    public override async Task Byte_array_contains_literal(bool async)
-    {
-        await base.Byte_array_contains_literal(async);
-
-        AssertSql(
-            """
-SELECT [s].[Id], [s].[Banner], [s].[Banner5], [s].[InternalNumber], [s].[Name], [s].[PeriodEnd], [s].[PeriodStart]
-FROM [Squads] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [s]
-WHERE CHARINDEX(0x01, [s].[Banner]) > 0
 """);
     }
 
@@ -2160,7 +2132,7 @@ FROM [LocustLeaders] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [l]
 INNER JOIN [Factions] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [f] ON [l].[Name] = [f].[CommanderName]
 WHERE CASE
     WHEN [f].[Name] = N'Locust' THEN CAST(1 AS bit)
-END = CAST(0 AS bit) OR CASE
+END <> CAST(1 AS bit) OR CASE
     WHEN [f].[Name] = N'Locust' THEN CAST(1 AS bit)
 END IS NULL
 """);
@@ -2985,20 +2957,6 @@ WHERE [g].[Discriminator] = N'Officer' AND EXISTS (
     FROM [Gears] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [g0]
     WHERE [g].[Nickname] = [g0].[LeaderNickname] AND [g].[SquadId] = [g0].[LeaderSquadId])
 ORDER BY [g].[HasSoulPatch] DESC, [t].[Note], [g].[Nickname], [g].[SquadId], [t].[Id], [g1].[Nickname], [g1].[SquadId], [s1].[Rank], [s1].[Nickname], [s1].[SquadId], [s1].[IsAutomatic0], [s1].[Id], [s1].[Nickname0], [s1].[SquadId0], [s1].[Id0], [s1].[Id1], [s1].[Nickname00], [s1].[SquadId00], [s2].[IsAutomatic], [s2].[Nickname] DESC, [s2].[Id]
-""");
-    }
-
-    public override async Task Byte_array_contains_parameter(bool async)
-    {
-        await base.Byte_array_contains_parameter(async);
-
-        AssertSql(
-            """
-@someByte='1' (Size = 1)
-
-SELECT [s].[Id], [s].[Banner], [s].[Banner5], [s].[InternalNumber], [s].[Name], [s].[PeriodEnd], [s].[PeriodStart]
-FROM [Squads] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [s]
-WHERE CHARINDEX(CAST(@someByte AS varbinary(max)), [s].[Banner]) > 0
 """);
     }
 
@@ -3962,7 +3920,7 @@ INNER JOIN (
     FROM [Factions] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [f]
     WHERE [f].[Name] = N'Swarm'
 ) AS [f0] ON [l].[Name] = [f0].[CommanderName]
-WHERE [f0].[Eradicated] = CAST(0 AS bit) OR [f0].[Eradicated] IS NULL
+WHERE [f0].[Eradicated] <> CAST(1 AS bit) OR [f0].[Eradicated] IS NULL
 """);
     }
 
@@ -4515,19 +4473,6 @@ WHERE [g].[HasSoulPatch] = CAST(1 AS bit) AND (
 """);
     }
 
-    public override async Task Contains_on_byte_array_property_using_byte_column(bool async)
-    {
-        await base.Contains_on_byte_array_property_using_byte_column(async);
-
-        AssertSql(
-            """
-SELECT [s].[Id], [s].[Banner], [s].[Banner5], [s].[InternalNumber], [s].[Name], [s].[PeriodEnd], [s].[PeriodStart], [l].[Name], [l].[Discriminator], [l].[LocustHordeId], [l].[PeriodEnd], [l].[PeriodStart], [l].[ThreatLevel], [l].[ThreatLevelByte], [l].[ThreatLevelNullableByte], [l].[DefeatedByNickname], [l].[DefeatedBySquadId], [l].[HighCommandId]
-FROM [Squads] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [s]
-CROSS JOIN [LocustLeaders] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [l]
-WHERE CHARINDEX(CAST([l].[ThreatLevelByte] AS varbinary(max)), [s].[Banner]) > 0
-""");
-    }
-
     public override async Task Project_shadow_properties(bool async)
     {
         await base.Project_shadow_properties(async);
@@ -4958,23 +4903,26 @@ WHERE COALESCE([c].[Location], N'') + N'Added' LIKE N'%Add%'
 """);
     }
 
-    public override async Task Enum_array_contains(bool async)
-    {
-        await base.Enum_array_contains(async);
-
-        AssertSql(
-            """
-@types_without_nulls='[1]' (Size = 4000)
-
-SELECT [w].[Id], [w].[AmmunitionType], [w].[IsAutomatic], [w].[Name], [w].[OwnerFullName], [w].[PeriodEnd], [w].[PeriodStart], [w].[SynergyWithId]
-FROM [Weapons] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [w]
-LEFT JOIN [Weapons] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [w0] ON [w].[SynergyWithId] = [w0].[Id]
-WHERE [w0].[Id] IS NOT NULL AND ([w0].[AmmunitionType] IN (
-    SELECT [t].[value]
-    FROM OPENJSON(@types_without_nulls) AS [t]
-) OR [w0].[AmmunitionType] IS NULL)
-""");
-    }
+// TODO: The base implementations no longer compile since https://github.com/dotnet/runtime/pull/110197 (Contains overload added with
+// optional parameter, not supported in expression trees). #35547 is tracking on the EF side.
+//
+//     public override async Task Enum_array_contains(bool async)
+//     {
+//         await base.Enum_array_contains(async);
+//
+//         AssertSql(
+//             """
+// @types_without_nulls='[1]' (Size = 4000)
+//
+// SELECT [w].[Id], [w].[AmmunitionType], [w].[IsAutomatic], [w].[Name], [w].[OwnerFullName], [w].[PeriodEnd], [w].[PeriodStart], [w].[SynergyWithId]
+// FROM [Weapons] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [w]
+// LEFT JOIN [Weapons] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [w0] ON [w].[SynergyWithId] = [w0].[Id]
+// WHERE [w0].[Id] IS NOT NULL AND ([w0].[AmmunitionType] IN (
+//     SELECT [t].[value]
+//     FROM OPENJSON(@types_without_nulls) AS [t]
+// ) OR [w0].[AmmunitionType] IS NULL)
+// """);
+//     }
 
     public override async Task Sum_with_optional_navigation_is_translated_to_sql(bool async)
     {
@@ -5067,20 +5015,6 @@ LEFT JOIN [Gears] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [g] ON 
 LEFT JOIN [Tags] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [t0] ON ([g].[Nickname] = [t0].[GearNickName] OR ([g].[Nickname] IS NULL AND [t0].[GearNickName] IS NULL)) AND ([g].[SquadId] = [t0].[GearSquadId] OR ([g].[SquadId] IS NULL AND [t0].[GearSquadId] IS NULL))
 LEFT JOIN [Gears] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [g0] ON [t0].[GearNickName] = [g0].[Nickname] AND [t0].[GearSquadId] = [g0].[SquadId]
 LEFT JOIN [Cities] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [c] ON [g0].[AssignedCityName] = [c].[Name]
-""");
-    }
-
-    public override async Task Byte_array_filter_by_SequenceEqual(bool async)
-    {
-        await base.Byte_array_filter_by_SequenceEqual(async);
-
-        AssertSql(
-            """
-@byteArrayParam='0x0405060708' (Size = 5)
-
-SELECT [s].[Id], [s].[Banner], [s].[Banner5], [s].[InternalNumber], [s].[Name], [s].[PeriodEnd], [s].[PeriodStart]
-FROM [Squads] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [s]
-WHERE [s].[Banner5] = @byteArrayParam
 """);
     }
 
@@ -5676,7 +5610,7 @@ LEFT JOIN (
     FROM [Factions] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [f]
     WHERE [f].[Name] = N'Swarm'
 ) AS [f0] ON [l].[Name] = [f0].[CommanderName]
-WHERE [f0].[Eradicated] = CAST(0 AS bit) OR [f0].[Eradicated] IS NULL
+WHERE [f0].[Eradicated] <> CAST(1 AS bit) OR [f0].[Eradicated] IS NULL
 """);
     }
 
@@ -6155,6 +6089,20 @@ ORDER BY [t].[Note], [g].[Nickname] DESC, [t].[Id], [g].[SquadId], [s].[Id], [s0
 SELECT TOP(@p) [g].[Rank] & 1
 FROM [Gears] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [g]
 ORDER BY [g].[Nickname]
+""");
+    }
+
+    public override async Task Coalesce_with_non_root_evaluatable_Convert(bool async)
+    {
+        await base.Coalesce_with_non_root_evaluatable_Convert(async);
+
+        AssertSql(
+            """
+@rank='1' (Nullable = true)
+
+SELECT [g].[Nickname], [g].[SquadId], [g].[AssignedCityName], [g].[CityOfBirthName], [g].[Discriminator], [g].[FullName], [g].[HasSoulPatch], [g].[LeaderNickname], [g].[LeaderSquadId], [g].[PeriodEnd], [g].[PeriodStart], [g].[Rank]
+FROM [Gears] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [g]
+WHERE @rank = [g].[Rank]
 """);
     }
 
@@ -7156,18 +7104,6 @@ ORDER BY [f].[Name]
 """);
     }
 
-    public override async Task Byte_array_filter_by_length_literal(bool async)
-    {
-        await base.Byte_array_filter_by_length_literal(async);
-
-        AssertSql(
-            """
-SELECT [s].[Id], [s].[Banner], [s].[Banner5], [s].[InternalNumber], [s].[Name], [s].[PeriodEnd], [s].[PeriodStart]
-FROM [Squads] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [s]
-WHERE CAST(DATALENGTH([s].[Banner]) AS int) = 2
-""");
-    }
-
     public override async Task GroupBy_Property_Include_Select_Average(bool async)
     {
         await base.GroupBy_Property_Include_Select_Average(async);
@@ -7638,6 +7574,21 @@ LEFT JOIN [Gears] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [g] ON 
 LEFT JOIN [Weapons] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [w] ON [g].[FullName] = [w].[OwnerFullName]
 WHERE [g].[HasSoulPatch] = CAST(0 AS bit)
 ORDER BY [t].[Id], [g].[Nickname], [g].[SquadId]
+""");
+    }
+
+    public override async Task Correlated_collections_on_RightJoin_with_predicate(bool async)
+    {
+        await base.Correlated_collections_on_RightJoin_with_predicate(async);
+
+        AssertSql(
+            """
+SELECT [g].[Nickname], [g].[SquadId], [t].[Id], [w].[Name], [w].[Id]
+FROM [Gears] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [g]
+RIGHT JOIN [Tags] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [t] ON [g].[Nickname] = [t].[GearNickName]
+LEFT JOIN [Weapons] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [w] ON [g].[FullName] = [w].[OwnerFullName]
+WHERE [g].[HasSoulPatch] = CAST(0 AS bit)
+ORDER BY [g].[Nickname], [g].[SquadId], [t].[Id]
 """);
     }
 
@@ -8376,20 +8327,6 @@ WHERE CASE
         ELSE CAST(0 AS bit)
     END
 END = CAST(1 AS bit)
-""");
-    }
-
-    public override async Task Byte_array_filter_by_length_parameter(bool async)
-    {
-        await base.Byte_array_filter_by_length_parameter(async);
-
-        AssertSql(
-            """
-@p='2'
-
-SELECT [s].[Id], [s].[Banner], [s].[Banner5], [s].[InternalNumber], [s].[Name], [s].[PeriodEnd], [s].[PeriodStart]
-FROM [Squads] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [s]
-WHERE CAST(DATALENGTH([s].[Banner]) AS int) = @p
 """);
     }
 

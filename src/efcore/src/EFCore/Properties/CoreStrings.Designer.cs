@@ -553,7 +553,7 @@ namespace Microsoft.EntityFrameworkCore.Diagnostics
                 type, property);
 
         /// <summary>
-        ///     Configuring the complex property '{type}.{property}' as optional is not supported, call 'IsRequired()'. See https://github.com/dotnet/efcore/issues/31376 for more information.
+        ///     Configuring the collection complex property '{type}.{property}' as optional is invalid.
         /// </summary>
         public static string ComplexPropertyOptional(object? type, object? property)
             => string.Format(
@@ -1003,7 +1003,7 @@ namespace Microsoft.EntityFrameworkCore.Diagnostics
             => GetString("EFConstantInvoked");
 
         /// <summary>
-        ///     'EF.Constant()' isn't supported your by provider.
+        ///     'EF.Constant()' isn't supported by your provider.
         /// </summary>
         public static string EFConstantNotSupported
             => GetString("EFConstantNotSupported");
@@ -2242,6 +2242,12 @@ namespace Microsoft.EntityFrameworkCore.Diagnostics
                 service);
 
         /// <summary>
+        ///     An 'ExecuteUpdate' call must specify at least one 'SetProperty' invocation, to indicate the properties to be updated.
+        /// </summary>
+        public static string NoSetPropertyInvocation
+            => GetString("NoSetPropertyInvocation");
+
+        /// <summary>
         ///     The property '{1_entityType}.{0_property}' does not have a setter. Either make the property writable or use a different '{propertyAccessMode}'.
         /// </summary>
         public static string NoSetter(object? property, object? entityType, object? propertyAccessMode)
@@ -2948,12 +2954,6 @@ namespace Microsoft.EntityFrameworkCore.Diagnostics
         /// </summary>
         public static string SetOperationWithDifferentIncludesInOperands
             => GetString("SetOperationWithDifferentIncludesInOperands");
-
-        /// <summary>
-        ///     The SetProperty&lt;TProperty&gt; method can only be used within 'ExecuteUpdate' method.
-        /// </summary>
-        public static string SetPropertyMethodInvoked
-            => GetString("SetPropertyMethodInvoked");
 
         /// <summary>
         ///     The shared-type entity type '{entityType}' cannot have a base type.

@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -58,37 +58,7 @@ namespace System.Xaml
         }
 #endif
 
-#if PRESENTATION_CORE || PRESENTATIONFRAMEWORK ||REACHFRAMEWORK || DEBUG
-
-#if !WINDOWS_BASE && !SYSTEM_XAML
-        /// <summary>
-        ///     Given an assembly, returns the partial name of the assembly.
-        /// </summary>
-        internal static string GetAssemblyPartialName(Assembly assembly)
-        {
-            AssemblyName name = new AssemblyName(assembly.FullName);
-            string partialName = name.Name;
-            return (partialName != null) ? partialName : string.Empty;
-        }
-#endif
-
-#endif
-
 #if PRESENTATIONFRAMEWORK
-
-        /// <summary>
-        ///     Get the full assembly name by combining the partial name passed in
-        ///     with everything else from proto assembly.
-        /// </summary>
-        internal static string GetFullAssemblyNameFromPartialName(
-                                    Assembly protoAssembly,
-                                    string partialName)
-        {
-            AssemblyName name = new AssemblyName(protoAssembly.FullName);
-            name.Name = partialName;
-            return name.FullName;
-        }
-
         internal static Point ClientToScreen(UIElement relativeTo, Point point)
         {
             GeneralTransform transform;
@@ -117,12 +87,12 @@ namespace System.Xaml
         // This cache is bound (gated) by the number of assemblies in the appdomain.
         // We use a callback on GC to purge out collected assemblies, so we don't grow indefinitely.
         //
-        static Dictionary<object, AssemblyName> _assemblies; // get key via GetKeyForAssembly
-        static object syncObject = new object();
-        static bool _isGCCallbackPending;
+        private static Dictionary<object, AssemblyName> _assemblies; // get key via GetKeyForAssembly
+        private static object syncObject = new object();
+        private static bool _isGCCallbackPending;
 
         // PERF: Cache delegate for CleanupCollectedAssemblies to avoid allocating it each time.
-        static readonly WaitCallback _cleanupCollectedAssemblies = CleanupCollectedAssemblies;
+        private static readonly WaitCallback _cleanupCollectedAssemblies = CleanupCollectedAssemblies;
 
         /// <summary>
         ///     This function iterates through the assemblies loaded in the current
@@ -155,7 +125,7 @@ namespace System.Xaml
             return null;
         }
 
-        static AssemblyName GetAssemblyName(Assembly assembly)
+        private static AssemblyName GetAssemblyName(Assembly assembly)
         {
             object key = assembly.IsDynamic ? (object)new WeakRefKey(assembly) : assembly;
             lock (syncObject)
@@ -166,12 +136,12 @@ namespace System.Xaml
                     _assemblies = new Dictionary<object, AssemblyName>();
                 }
                 else
-	            {
+                {
                     if (_assemblies.TryGetValue(key, out result))
                     {
                         return result;
                     }
-	            }
+                }
 
                 //
                 // We use AssemblyName ctor here because GetName demands FileIOPermission
@@ -193,7 +163,7 @@ namespace System.Xaml
         }
 
         // After a GC, clean up the weakrefs to any collected dynamic assemblies
-        static void CleanupCollectedAssemblies(object state) // dummy parameter required by WaitCallback definition
+        private static void CleanupCollectedAssemblies(object state) // dummy parameter required by WaitCallback definition
         {
             bool foundLiveDynamicAssemblies = false;
             List<object> keysToRemove = null;
@@ -201,8 +171,7 @@ namespace System.Xaml
             {
                 foreach (object key in _assemblies.Keys)
                 {
-                    WeakReference weakRef = key as WeakReference;
-                    if (weakRef is null)
+                    if (key is not WeakReference weakRef)
                     {
                         continue;
                     }
@@ -291,10 +260,9 @@ namespace System.Xaml
 #if WINDOWS_BASE || PRESENTATION_CORE || SYSTEM_XAML
     // for use as the key to a dictionary, when the "real" key is an object
     // that we should not keep alive by a strong reference.
-    class WeakRefKey : WeakReference
+    internal class WeakRefKey : WeakReference
     {
-        public WeakRefKey(object target)
-            :base(target)
+        public WeakRefKey(object target) : base(target)
         {
             Debug.Assert(target is not null);
             _hashCode = target.GetHashCode();
@@ -337,18 +305,18 @@ namespace System.Xaml
             return !(left == right);
         }
 
-        readonly int _hashCode;  // cache target's hashcode, lest it get GC'd out from under us
+        private readonly int _hashCode;  // cache target's hashcode, lest it get GC'd out from under us
     }
 
     // This cleanup token will be immediately thrown away and as a result it will
     // (a couple of GCs later) make it into the finalization queue and when finalized
     // will kick off a thread-pool job that you can use to purge a weakref cache.
-    class GCNotificationToken
+    internal class GCNotificationToken
     {
-        WaitCallback callback;
-        object state;
+        private WaitCallback callback;
+        private object state;
 
-        GCNotificationToken(WaitCallback callback, object state)
+        private GCNotificationToken(WaitCallback callback, object state)
         {
             this.callback = callback;
             this.state = state;

@@ -15,7 +15,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Editor.Test;
 using Microsoft.CodeAnalysis.Formatting;
-using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Remote;
 using Microsoft.CodeAnalysis.Remote.Testing;
 using Microsoft.CodeAnalysis.Serialization;
@@ -369,7 +368,7 @@ public class SolutionServiceTests
 
         await VerifySolutionUpdate(workspace, s =>
         {
-            return s.AddAnalyzerConfigDocuments(ImmutableArray.Create(analyzerConfigDocumentInfo));
+            return s.AddAnalyzerConfigDocuments([analyzerConfigDocumentInfo]);
         });
 
         workspace.OnAnalyzerConfigDocumentAdded(analyzerConfigDocumentInfo);

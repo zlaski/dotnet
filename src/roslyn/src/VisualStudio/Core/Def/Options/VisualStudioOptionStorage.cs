@@ -85,25 +85,19 @@ internal abstract class VisualStudioOptionStorage
             => persister.TryFetch(optionKey, FlagName, out value);
     }
 
-    internal sealed class LocalUserProfileStorage : VisualStudioOptionStorage
+    internal sealed class LocalUserProfileStorage(string path, string key) : VisualStudioOptionStorage
     {
-        private readonly string _path;
-        private readonly string _key;
-
-        public LocalUserProfileStorage(string path, string key)
-        {
-            _path = path;
-            _key = key;
-        }
+        public string Path => path;
+        public string Key => key;
 
         public Task PersistAsync(LocalUserRegistryOptionPersister persister, OptionKey2 optionKey, object? value)
         {
-            persister.Persist(optionKey, _path, _key, value);
+            persister.Persist(optionKey, path, key, value);
             return Task.CompletedTask;
         }
 
         public bool TryFetch(LocalUserRegistryOptionPersister persister, OptionKey2 optionKey, out object? value)
-            => persister.TryFetch(optionKey, _path, _key, out value);
+            => persister.TryFetch(optionKey, path, key, out value);
     }
 
     public static readonly IReadOnlyDictionary<string, VisualStudioOptionStorage> Storages = new Dictionary<string, VisualStudioOptionStorage>()
@@ -212,6 +206,7 @@ internal abstract class VisualStudioOptionStorage
         {"csharp_style_pattern_matching_over_as_with_null_check", new RoamingProfileStorage("TextEditor.CSharp.Specific.PreferPatternMatchingOverAsWithNullCheck")},
         {"csharp_style_pattern_matching_over_is_with_cast_check", new RoamingProfileStorage("TextEditor.CSharp.Specific.PreferPatternMatchingOverIsWithCastCheck")},
         {"csharp_style_prefer_extended_property_pattern", new RoamingProfileStorage("TextEditor.CSharp.Specific.PreferExtendedPropertyPattern")},
+        {"csharp_style_prefer_implicitly_typed_lambda_expression", new RoamingProfileStorage("TextEditor.CSharp.Specific.PreferImplicitlyTypedLambdaExpression")},
         {"csharp_style_prefer_index_operator", new RoamingProfileStorage("TextEditor.CSharp.Specific.PreferIndexOperator")},
         {"csharp_style_prefer_local_over_anonymous_function", new RoamingProfileStorage("TextEditor.CSharp.Specific.PreferLocalOverAnonymousFunction")},
         {"csharp_style_prefer_method_group_conversion", new RoamingProfileStorage("TextEditor.CSharp.Specific.PreferMethodGroupConversion")},
@@ -377,6 +372,7 @@ internal abstract class VisualStudioOptionStorage
         {"dotnet_unsupported_report_invalid_json_patterns", new RoamingProfileStorage("TextEditor.%LANGUAGE%.Specific.ReportInvalidJsonPatterns")},
         {"visual_studio_enable_key_binding_reset", new FeatureFlagStorage("Roslyn.KeybindingResetEnabled")},
         {"visual_studio_enable_semantic_search", new FeatureFlagStorage("Roslyn.SemanticSearchEnabled")},
+        {"visual_studio_enable_semantic_search_prompt", new FeatureFlagStorage("Roslyn.ShowPromptInSemanticSearch")},
         {"visual_studio_enable_copilot_rename_context", new FeatureFlagStorage("Roslyn.CopilotRenameGetContext")},
         {"visual_studio_key_binding_needs_reset", new LocalUserProfileStorage(@"Roslyn\Internal\KeybindingsStatus", "NeedsReset")},
         {"visual_studio_key_binding_reset_never_show_again", new LocalUserProfileStorage(@"Roslyn\Internal\KeybindingsStatus", "NeverShowAgain")},

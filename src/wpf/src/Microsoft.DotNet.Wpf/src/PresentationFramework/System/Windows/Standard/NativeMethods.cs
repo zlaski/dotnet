@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -181,7 +181,7 @@ namespace Standard
     /// <summary>
     /// For IWebBrowser2.  READYSTATE_*
     /// </summary>
-    enum READYSTATE
+    internal enum READYSTATE
     {
         UNINITIALIZED = 0,
         LOADING = 1,
@@ -1267,7 +1267,7 @@ namespace Standard
     }
 
     [Flags]
-    enum SLGP
+    internal enum SLGP
     {
         SHORTPATH = 0x1,
         UNCPRIORITY = 0x2,
@@ -1787,8 +1787,9 @@ namespace Standard
         public char[] szInfoTitle = new char[64];
         public uint dwInfoFlags;
         public Guid guidItem;
+
         // Vista only
-        IntPtr hBalloonIcon;
+        private IntPtr hBalloonIcon;
     }
 
     [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
@@ -1796,9 +1797,9 @@ namespace Standard
     internal class SHARDAPPIDINFO
     {
         [MarshalAs(UnmanagedType.Interface)]
-        object psi;    // The namespace location of the the item that should be added to the recent docs folder.
+        private object psi;    // The namespace location of the the item that should be added to the recent docs folder.
         [MarshalAs(UnmanagedType.LPWStr)]
-        string pszAppID;  // The id of the application that should be associated with this recent doc.
+        private string pszAppID;  // The id of the application that should be associated with this recent doc.
     }
 
     [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
@@ -1806,21 +1807,21 @@ namespace Standard
     internal class SHARDAPPIDINFOIDLIST
     {
         /// <summary>The idlist for the shell item that should be added to the recent docs folder.</summary>
-        IntPtr pidl;
+        private IntPtr pidl;
         /// <summary>The id of the application that should be associated with this recent doc.</summary>
         [MarshalAs(UnmanagedType.LPWStr)]
-        string pszAppID;
+        private string pszAppID;
     }
 
     [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     internal class SHARDAPPIDINFOLINK
     {
-        IntPtr psl;     // An IShellLink instance that when launched opens a recently used item in the specified
+        private IntPtr psl;     // An IShellLink instance that when launched opens a recently used item in the specified
         // application. This link is not added to the recent docs folder, but will be added to the
         // specified application's destination list.
         [MarshalAs(UnmanagedType.LPWStr)]
-        string pszAppID;  // The id of the application that should be associated with this recent doc.
+        private string pszAppID;  // The id of the application that should be associated with this recent doc.
     }
 
 
@@ -1879,8 +1880,10 @@ namespace Standard
         {
             get
             {
-                var ncm = new NONCLIENTMETRICS();
-                ncm.cbSize = Marshal.SizeOf(typeof(NONCLIENTMETRICS));
+                var ncm = new NONCLIENTMETRICS
+                {
+                    cbSize = Marshal.SizeOf(typeof(NONCLIENTMETRICS))
+                };
                 return ncm;
             }
         }
@@ -1889,9 +1892,11 @@ namespace Standard
         {
             get
             {
-                var ncm = new NONCLIENTMETRICS();
-                // Account for the missing iPaddedBorderWidth
-                ncm.cbSize = Marshal.SizeOf(typeof(NONCLIENTMETRICS)) - sizeof(int);
+                var ncm = new NONCLIENTMETRICS
+                {
+                    // Account for the missing iPaddedBorderWidth
+                    cbSize = Marshal.SizeOf(typeof(NONCLIENTMETRICS)) - sizeof(int)
+                };
                 return ncm;
             }
         }

@@ -41,9 +41,9 @@ namespace Microsoft.CodeAnalysis.Editor.CSharp.UnitTests.Recommendations
         }
 
         [Fact]
-        public async Task TestAfterGlobalStatement_Interactive()
+        public async Task TestAfterGlobalStatement()
         {
-            await VerifyKeywordAsync(SourceCodeKind.Script,
+            await VerifyKeywordAsync(
                 """
                 System.Console.WriteLine();
                 $$
@@ -482,6 +482,23 @@ namespace Microsoft.CodeAnalysis.Editor.CSharp.UnitTests.Recommendations
         {
             await VerifyKeywordAsync(AddInsideMethod("scoped $$"));
             await VerifyKeywordAsync("scoped $$");
+        }
+
+        [Fact]
+        public async Task TestWithinExtension()
+        {
+            await VerifyAbsenceAsync(
+                """
+                static class C
+                {
+                    extension(string s)
+                    {
+                        $$
+                    }
+                }
+                """,
+                CSharpNextParseOptions,
+                CSharpNextScriptParseOptions);
         }
     }
 }

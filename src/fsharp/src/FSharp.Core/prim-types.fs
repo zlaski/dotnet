@@ -183,7 +183,7 @@ namespace Microsoft.FSharp.Core
         inherit Attribute()
         member _.CompiledName = compiledName
 
-    [<AttributeUsage (AttributeTargets.Class ||| AttributeTargets.Struct ||| AttributeTargets.ReturnValue, AllowMultiple=false)>]  
+    [<AttributeUsage (AttributeTargets.Class ||| AttributeTargets.Struct ||| AttributeTargets.ReturnValue ||| AttributeTargets.Parameter ,AllowMultiple=false)>]  
     [<Sealed>]
     type StructAttribute() =
         inherit Attribute()
@@ -221,7 +221,7 @@ namespace Microsoft.FSharp.Core
         member _.Minor = minor
         member _.Release = release
 
-    [<AttributeUsage(AttributeTargets.All, AllowMultiple=false)>]
+    [<AttributeUsage(AttributeTargets.All, AllowMultiple=true)>]
     [<Sealed>]
     type CompilationMappingAttribute(sourceConstructFlags:SourceConstructFlags,
                                      variantNumber:int,
@@ -739,8 +739,11 @@ namespace Microsoft.FSharp.Core
             let inline TypeTestFast<'T>(source: objnull) = 
                 //assert not(TypeInfo<'T>.TypeInfo = TypeNullnessSemantics_NullTrueValue)
                 notnullPrim(isinstPrim<'T>(source)) 
-
+#if !BUILDING_WITH_LKG && !NO_NULLCHECKING_LIB_SUPPORT
+            let Dispose<'T when 'T :> IDisposable >(resource:'T|null) = 
+#else
             let Dispose<'T when 'T :> IDisposable >(resource:'T) = 
+#endif
                 match box resource with 
                 | null -> ()
                 | _ -> resource.Dispose()

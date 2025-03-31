@@ -38,8 +38,9 @@ namespace System.Windows.Markup
     // if the passed in namespace is subsumed, then newXmlNamespace returns the subsuming namespace.
     // </param>
     internal delegate bool IsXmlNamespaceSupportedCallback(string xmlNamespace, out string newXmlNamespace);
-    delegate void HandleElementCallback(int elementDepth, ref bool more);
-    delegate void HandleAttributeCallback(int elementDepth);
+
+    internal delegate void HandleElementCallback(int elementDepth, ref bool more);
+    internal delegate void HandleAttributeCallback(int elementDepth);
 
     internal sealed class XmlCompatibilityReader : XmlWrappingReader
     {
@@ -162,7 +163,7 @@ namespace System.Windows.Markup
                 ScanForEndCompatibility(previousElementDepth);
             }
 
-            bool more = Reader.Read(); //passed as ref arg to ReadStartElement and ReadEndElement
+            bool more = Reader.Read(); // passed as ref arg to ReadStartElement and ReadEndElement
             bool result = false;
 
             while (more)
@@ -327,7 +328,7 @@ namespace System.Windows.Markup
                 }
 
                 _depthOffset--;
-                PopScope();  //we know we can pop, so no need to scan
+                PopScope();  // we know we can pop, so no need to scan
                 more = Reader.Read();
             }
             else
@@ -713,10 +714,8 @@ namespace System.Windows.Markup
         {
             set
             {
-                XmlTextReader xmlTextReader = Reader as XmlTextReader;
-
                 // review, what if not the XmlTextReader.
-                if (xmlTextReader is not null)
+                if (Reader is XmlTextReader xmlTextReader)
                 {
                     xmlTextReader.Normalization = value;
                 }
@@ -731,8 +730,7 @@ namespace System.Windows.Markup
         {
             get
             {
-                XmlTextReader textReader = Reader as XmlTextReader;
-                if (textReader is null)
+                if (Reader is not XmlTextReader textReader)
                 {
                     return new System.Text.UTF8Encoding(true, true);
                 }
@@ -821,7 +819,7 @@ namespace System.Windows.Markup
                 {
                     AddKnownNamespace(namespaceName);
 
-                    if (String.IsNullOrEmpty(mappedNamespace) || namespaceName == mappedNamespace)
+                    if (string.IsNullOrEmpty(mappedNamespace) || namespaceName == mappedNamespace)
                     {
                         _namespaceMap[namespaceName] = namespaceName;
                     }
@@ -958,7 +956,7 @@ namespace System.Windows.Markup
             foreach (string pair in content.Trim().Split(' '))
             {
                 // check each non-null, non-empty space-delineated namespace/element pair
-                if (!String.IsNullOrEmpty(pair))
+                if (!string.IsNullOrEmpty(pair))
                 {
                     int colonIndex = pair.IndexOf(':');
                     int length = pair.Length;
@@ -1006,7 +1004,7 @@ namespace System.Windows.Markup
             foreach (string prefix in prefixes.Trim().Split(' '))
             {
                 // check each non-null, non-empty space-delineated prefix
-                if (!String.IsNullOrEmpty(prefix))
+                if (!string.IsNullOrEmpty(prefix))
                 {
                     string namespaceUri = LookupNamespace(prefix);
 
@@ -1220,7 +1218,7 @@ namespace System.Windows.Markup
                 Error(SR.XCRRequiresAttribNotFound);
             }
 
-            if (String.IsNullOrEmpty(requiresValue))
+            if (string.IsNullOrEmpty(requiresValue))
             {
                 // Requires attribute may not be empty
                 Error(SR.XCRInvalidRequiresAttribute);
@@ -1626,7 +1624,7 @@ namespace System.Windows.Markup
         }
         #endregion Private Properties
         #region Nested Classes
-        struct NamespaceElementPair
+        private struct NamespaceElementPair
         {
             public string namespaceName;
             public string itemName;
@@ -1645,18 +1643,18 @@ namespace System.Windows.Markup
         /// </summary>
         private class CompatibilityScope
         {
-            CompatibilityScope _previous;
-            int _depth;
-            bool _fallbackSeen;
-            bool _inAlternateContent;
-            bool _inProcessContent;
-            bool _choiceTaken;
-            bool _choiceSeen;
-            XmlCompatibilityReader _reader;
-            Dictionary<string, object> _ignorables;
-            Dictionary<string, ProcessContentSet> _processContents;
-            Dictionary<string, PreserveItemSet> _preserveElements;
-            Dictionary<string, PreserveItemSet> _preserveAttributes;
+            private CompatibilityScope _previous;
+            private int _depth;
+            private bool _fallbackSeen;
+            private bool _inAlternateContent;
+            private bool _inProcessContent;
+            private bool _choiceTaken;
+            private bool _choiceSeen;
+            private XmlCompatibilityReader _reader;
+            private Dictionary<string, object> _ignorables;
+            private Dictionary<string, ProcessContentSet> _processContents;
+            private Dictionary<string, PreserveItemSet> _preserveElements;
+            private Dictionary<string, PreserveItemSet> _preserveAttributes;
 
             public CompatibilityScope(CompatibilityScope previous, int depth, XmlCompatibilityReader reader)
             {
@@ -1948,12 +1946,12 @@ namespace System.Windows.Markup
             }
         }
 
-        class ProcessContentSet
+        private class ProcessContentSet
         {
-            bool _all;
-            string _namespaceName;
-            XmlCompatibilityReader _reader;
-            HashSet<string> _names;
+            private bool _all;
+            private string _namespaceName;
+            private XmlCompatibilityReader _reader;
+            private HashSet<string> _names;
 
             public ProcessContentSet(string namespaceName, XmlCompatibilityReader reader)
             {
@@ -2003,12 +2001,12 @@ namespace System.Windows.Markup
             }
 }
 
-        class PreserveItemSet
+        private class PreserveItemSet
         {
-            bool _all;
-            string _namespaceName;
-            XmlCompatibilityReader _reader;
-            Dictionary<string, string> _names;
+            private bool _all;
+            private string _namespaceName;
+            private XmlCompatibilityReader _reader;
+            private Dictionary<string, string> _names;
 
             public PreserveItemSet(string namespaceName, XmlCompatibilityReader reader)
             {

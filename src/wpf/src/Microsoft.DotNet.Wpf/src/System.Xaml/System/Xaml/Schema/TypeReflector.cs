@@ -14,7 +14,7 @@ using XAML3 = System.Windows.Markup;
 namespace System.Xaml.Schema
 {
     [Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2002:Do not lock on objects with weak identity", Justification = "This type is internal.")]
-    class TypeReflector : Reflector
+    internal class TypeReflector : Reflector
     {
         private const XamlCollectionKind XamlCollectionKindInvalid = (XamlCollectionKind)byte.MaxValue;
 
@@ -70,10 +70,14 @@ namespace System.Xaml.Schema
         // Used for UnknownReflector only
         private TypeReflector()
         {
-            _nonAttachableMemberCache = new ThreadSafeDictionary<string, XamlMember>();
-            _nonAttachableMemberCache.IsComplete = true;
-            _attachableMemberCache = new ThreadSafeDictionary<string, XamlMember>();
-            _attachableMemberCache.IsComplete = true;
+            _nonAttachableMemberCache = new ThreadSafeDictionary<string, XamlMember>
+            {
+                IsComplete = true
+            };
+            _attachableMemberCache = new ThreadSafeDictionary<string, XamlMember>
+            {
+                IsComplete = true
+            };
 
             _baseType.Value = XamlLanguage.Object;
             _boolTypeBits = (int)BoolTypeBits.Default | (int)BoolTypeBits.Unknown | (int)BoolTypeBits.WhitespaceSignificantCollection | (int)BoolTypeBits.AllValid;
@@ -410,8 +414,7 @@ namespace System.Xaml.Schema
             // We only check this once, at the root of the doc, and only in ObjectWriter.
             // So it's fine to use live reflection here.
             object obj = GetCustomAttribute(typeof(XAML3.NameScopePropertyAttribute), xamlType.UnderlyingType);
-            XAML3.NameScopePropertyAttribute nspAttr = obj as XAML3.NameScopePropertyAttribute;
-            if (nspAttr is not null)
+            if (obj is XAML3.NameScopePropertyAttribute nspAttr)
             {
                 Type ownerType = nspAttr.Type;
                 string propertyName = nspAttr.Name;
@@ -497,11 +500,7 @@ namespace System.Xaml.Schema
                 {
                     if (knownMember is not null)
                     {
-                        if (knownMembers is not null)
-                        {
-                            knownMembers.Add(knownMember);
-                        }
-
+                        knownMembers?.Add(knownMember);
                         continue;
                     }
                     else if (skipKnownNegatives)
@@ -737,9 +736,9 @@ namespace System.Xaml.Schema
         private void LookupAllStaticAccessors(out Dictionary<string, List<MethodInfo>> getters,
             out Dictionary<string, List<MethodInfo>> setters, out Dictionary<string, List<MethodInfo>> adders)
         {
-            getters = new Dictionary<string,List<MethodInfo>>();
-            setters = new Dictionary<string,List<MethodInfo>>();
-            adders = new Dictionary<string,List<MethodInfo>>();
+            getters = new Dictionary<string, List<MethodInfo>>();
+            setters = new Dictionary<string, List<MethodInfo>>();
+            adders = new Dictionary<string, List<MethodInfo>>();
 
             MethodInfo[] allMethods = UnderlyingType.GetMethods(AttachableProperties_BF);
 
@@ -753,7 +752,7 @@ namespace System.Xaml.Schema
             }
         }
 
-        private void LookupAllStaticAccessorsHelper(MethodInfo[] allMethods, Dictionary<string,List<MethodInfo>> getters,
+        private void LookupAllStaticAccessorsHelper(MethodInfo[] allMethods, Dictionary<string, List<MethodInfo>> getters,
             Dictionary<string, List<MethodInfo>> setters, Dictionary<string, List<MethodInfo>> adders, bool isUnderlyingTypePublic)
         {
             foreach (MethodInfo method in allMethods)
@@ -1133,9 +1132,9 @@ namespace System.Xaml.Schema
             Public
         }
 
-        internal class ThreadSafeDictionary<K,V> : Dictionary<K, V> where V : class
+        internal class ThreadSafeDictionary<K, V> : Dictionary<K, V> where V : class
         {
-            bool _isComplete;
+            private bool _isComplete;
 
             internal ThreadSafeDictionary()
             {

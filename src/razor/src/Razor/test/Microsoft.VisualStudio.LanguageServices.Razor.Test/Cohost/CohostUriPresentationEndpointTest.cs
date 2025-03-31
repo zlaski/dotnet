@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
@@ -80,15 +81,6 @@ public class CohostUriPresentationEndpointTest(ITestOutputHelper testOutputHelpe
                 The end.
                 """,
             additionalFiles: [
-                // The source generator isn't hooked up to our test project, so we have to manually "compile" the razor file
-                (FilePath("Component.cs"), """
-                    namespace SomeProject;
-
-                    public class Component : Microsoft.AspNetCore.Components.ComponentBase
-                    {
-                    }
-                    """),
-                // The above will make the component exist, but the .razor file needs to exist too for Uri presentation
                 (FilePath("Component.razor"), "")
             ],
             uris: [FileUri("Component.razor")],
@@ -108,9 +100,6 @@ public class CohostUriPresentationEndpointTest(ITestOutputHelper testOutputHelpe
 
                 The end.
                 """,
-            additionalFiles: [
-                (FilePath("_Imports.razor"), "")
-            ],
             uris: [FileUri("_Imports.razor")],
             expected: null);
     }
@@ -165,13 +154,6 @@ public class CohostUriPresentationEndpointTest(ITestOutputHelper testOutputHelpe
                 }
                 """,
             additionalFiles: [
-                (FilePath("Component.cs"), """
-                    namespace SomeProject;
-
-                    public class Component : Microsoft.AspNetCore.Components.ComponentBase
-                    {
-                    }
-                    """),
                 (FilePath("Component.razor"), "")
             ],
             uris: [FileUri("Component.razor")],
@@ -192,13 +174,6 @@ public class CohostUriPresentationEndpointTest(ITestOutputHelper testOutputHelpe
                 The end.
                 """,
             additionalFiles: [
-                (FilePath("Component.cs"), """
-                    namespace SomeProject;
-
-                    public class Component : Microsoft.AspNetCore.Components.ComponentBase
-                    {
-                    }
-                    """),
                 (FilePath("Component.razor"), "")
             ],
             uris: [
@@ -223,13 +198,6 @@ public class CohostUriPresentationEndpointTest(ITestOutputHelper testOutputHelpe
                 The end.
                 """,
             additionalFiles: [
-                (FilePath("Component.cs"), """
-                    namespace SomeProject;
-
-                    public class Component : Microsoft.AspNetCore.Components.ComponentBase
-                    {
-                    }
-                    """),
                 (FilePath("Component.razor"), "")
             ],
             uris: [
@@ -254,22 +222,18 @@ public class CohostUriPresentationEndpointTest(ITestOutputHelper testOutputHelpe
                 The end.
                 """,
             additionalFiles: [
-                (FilePath("Component.cs"), """
-                    using Microsoft.AspNetCore.Components;
-
-                    namespace SomeProject;
-
-                    public class Component : ComponentBase
+                (FilePath("Component.razor"),
+                    """
+                    @code
                     {
                         [Parameter]
                         [EditorRequired]
                         public string RequiredParameter { get; set; }
-
+                    
                         [Parameter]
                         public string NormalParameter { get; set; }
                     }
-                    """),
-                (FilePath("Component.razor"), "")
+                    """)
             ],
             uris: [FileUri("Component.razor")],
             expected: """<Component RequiredParameter="" />""");
@@ -278,7 +242,7 @@ public class CohostUriPresentationEndpointTest(ITestOutputHelper testOutputHelpe
     private async Task VerifyUriPresentationAsync(string input, Uri[] uris, string? expected, WorkspaceEdit? htmlResponse = null, (string fileName, string contents)[]? additionalFiles = null)
     {
         TestFileMarkupParser.GetSpan(input, out input, out var span);
-        var document = await CreateProjectAndRazorDocumentAsync(input, additionalFiles: additionalFiles);
+        var document = CreateProjectAndRazorDocument(input, additionalFiles: additionalFiles);
         var sourceText = await document.GetTextAsync(DisposalToken);
 
         var requestInvoker = new TestLSPRequestInvoker([(VSInternalMethods.TextDocumentUriPresentationName, htmlResponse)]);

@@ -28,7 +28,7 @@ namespace Microsoft.VisualStudio.Razor.ProjectSystem;
 internal sealed class FallbackProjectManager : IFallbackProjectManager
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IProjectSnapshotManager _projectManager;
+    private readonly ProjectSnapshotManager _projectManager;
     private readonly IWorkspaceProvider _workspaceProvider;
     private readonly ITelemetryReporter _telemetryReporter;
 
@@ -38,7 +38,7 @@ internal sealed class FallbackProjectManager : IFallbackProjectManager
     [ImportingConstructor]
     public FallbackProjectManager(
         [Import(typeof(SVsServiceProvider))] IServiceProvider serviceProvider,
-        IProjectSnapshotManager projectManager,
+        ProjectSnapshotManager projectManager,
         IWorkspaceProvider workspaceProvider,
         ITelemetryReporter telemetryReporter)
     {
@@ -70,8 +70,8 @@ internal sealed class FallbackProjectManager : IFallbackProjectManager
         }
     }
 
-    public bool IsFallbackProject(IProjectSnapshot project)
-        => _fallbackProjects.Contains(project.Key);
+    public bool IsFallbackProject(ProjectKey projectKey)
+        => _fallbackProjects.Contains(projectKey);
 
     internal void DynamicFileAdded(
         ProjectId projectId,
@@ -84,7 +84,7 @@ internal sealed class FallbackProjectManager : IFallbackProjectManager
         {
             if (_projectManager.TryGetProject(razorProjectKey, out var project))
             {
-                if (IsFallbackProject(project))
+                if (IsFallbackProject(razorProjectKey))
                 {
                     // If this is a fallback project, then Roslyn may not track documents in the project, so these dynamic file notifications
                     // are the only way to know about files in the project.
@@ -114,8 +114,8 @@ internal sealed class FallbackProjectManager : IFallbackProjectManager
     {
         try
         {
-            if (_projectManager.TryGetProject(razorProjectKey, out var project) &&
-                IsFallbackProject(project))
+            if (IsFallbackProject(razorProjectKey) &&
+                _projectManager.TryGetProject(razorProjectKey, out var project))
             {
                 // If this is a fallback project, then Roslyn may not track documents in the project, so these dynamic file notifications
                 // are the only way to know about files in the project.

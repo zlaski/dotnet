@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.Razor.LanguageClient.Cohost;
 
 public class CohostInlineCompletionEndpointTest(ITestOutputHelper testOutputHelper) : CohostEndpointTestBase(testOutputHelper)
 {
-    [Fact]
+    [Fact(Skip = "Cannot edit source generated documents")]
     public Task Constructor()
         => VerifyInlineCompletionAsync(
             input: """
@@ -49,7 +49,7 @@ public class CohostInlineCompletionEndpointTest(ITestOutputHelper testOutputHelp
                 }
                 """);
 
-    [Fact]
+    [Fact(Skip = "Cannot edit source generated documents")]
     public Task Constructor_SmallIndent()
         => VerifyInlineCompletionAsync(
             input: """
@@ -82,7 +82,7 @@ public class CohostInlineCompletionEndpointTest(ITestOutputHelper testOutputHelp
 
     private async Task VerifyInlineCompletionAsync(TestCode input, string? output = null, int tabSize = 4)
     {
-        var document = await CreateProjectAndRazorDocumentAsync(input.Text, createSeparateRemoteAndLocalWorkspaces: true);
+        var document = CreateProjectAndRazorDocument(input.Text, createSeparateRemoteAndLocalWorkspaces: true);
         var inputText = await document.GetTextAsync(DisposalToken);
         var position = inputText.GetLinePosition(input.Position);
 
@@ -143,7 +143,7 @@ public class CohostInlineCompletionEndpointTest(ITestOutputHelper testOutputHelp
             throw new System.NotImplementedException();
         }
 
-        public bool SnippetShortcutExists_NonBlocking(string shortcut)
+        public bool SnippetShortcutExists_NonBlocking(string? shortcut)
         {
             throw new System.NotImplementedException();
         }

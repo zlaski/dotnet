@@ -44,6 +44,8 @@
 <![CDATA[
 <Configuration>
   <TargetConfiguration>$(Configuration)</TargetConfiguration>
+  <DesktopFramework>$(DesktopTargetFramework)</DesktopFramework>
+  <NetCoreAppMinTargetFramework>$(NetCoreAppMinTargetFramework)</NetCoreAppMinTargetFramework>
   <RepoRootDir>$(RepoRoot)</RepoRootDir>
   <CDBPath>$(NuGetPackageRoot)cdb-sos\$(cdbsosversion)\runtimes\win-%24(TargetArchitecture)\native\cdb.exe</CDBPath>
 </Configuration>
@@ -60,4 +62,13 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="_ApplyTestCategoryFilter" 
+          Condition="'$(SOS_TEST_CDAC)' == 'true'"
+          BeforeTargets="RunTests">
+    <ItemGroup>
+      <TestToRun Include="@(TestToRun)">
+        <TestRunnerAdditionalArguments>-trait Category=CDACCompatible</TestRunnerAdditionalArguments>
+      </TestToRun>
+    </ItemGroup>
+  </Target>
 </Project>

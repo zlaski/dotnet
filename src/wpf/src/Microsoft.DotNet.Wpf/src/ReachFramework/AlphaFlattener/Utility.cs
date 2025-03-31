@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -23,9 +23,9 @@ namespace Microsoft.Internal.AlphaFlattener
 #if DEBUG
     internal static class StopWatch
 	{
-		static double   s_total; // = 0;
-		static DateTime s_startTime;
-		static int      s_count; // = 0;
+		private static double   s_total; // = 0;
+		private static DateTime s_startTime;
+		private static int      s_count; // = 0;
 
 		internal static void Start()
 		{
@@ -1196,7 +1196,7 @@ namespace Microsoft.Internal.AlphaFlattener
         #region Image
 
         // val could be larger than 255 * 255 because of super lumbinance
-        static Byte Div255(int val)
+        private static Byte Div255(int val)
         {
             if (val > 255 * 255)
             {
@@ -1518,11 +1518,12 @@ namespace Microsoft.Internal.AlphaFlattener
         /// <returns></returns>
         public static DrawingBrush CreateNonInheritingDrawingBrush(Drawing drawing)
         {
-            DrawingBrush db = new DrawingBrush();
-
-            // Opt-out of inheritance through the new Freezable.
-            db.CanBeInheritanceContext = false;
-            db.Drawing = drawing;
+            DrawingBrush db = new DrawingBrush
+            {
+                // Opt-out of inheritance through the new Freezable.
+                CanBeInheritanceContext = false,
+                Drawing = drawing
+            };
 
             return db;
         }

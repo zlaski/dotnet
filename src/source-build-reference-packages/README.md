@@ -53,11 +53,6 @@ for detailed guidance.
 ./generate.sh --package system.buffers,4.5.1
 ```
 
-After generating new reference packages, all new projects must be referenced as a
-[DependencyPackageProjects](https://github.com/dotnet/source-build-reference-packages/blob/main/eng/Build.props#L9).
-These must be defined in dependency order. There is a
-[tracking issue](https://github.com/dotnet/source-build/issues/1690) to address this manual step.
-
 The tooling does not handle all situations and sometimes the generated code will need manual tweeks to get
 it to compile. If this occurs when generating a newer version of an existing package, it can be helpful to
 regenerate the older version to see what customizations to the generated code were made.
@@ -67,23 +62,32 @@ regenerate the older version to see what customizations to the generated code we
 * Generate reference package and its depencencies running the `./generate.sh --package <package>,<version>` script.
 * Inspect any changes to packages that already existed in the repository. There are two reasons why previously
 generated packages show changes when being regenerated.
-    1. The package contains intentional code modifications on top of the generated code. This may be upgrading a
-    project reference to address a CVE or code fixups because the generate tooling does not support a scenario.
+    1. The package contains intentional code modifications on top of the generated code.
+    This may be code fixups because the generate tooling does not support a scenario.
     When this occurs, there should be code comments explaining why the code modification was made. If this is
     the case, the changes to the existing package should be reverted.
     2. The generate tooling has changed since the last time this package was generated. The new changes should
     be considered better/correct and should be committed.
-* Add `DependencyPackageProjects` for all new projects in the
-[eng/Build.props](https://github.com/dotnet/source-build-reference-packages/blob/main/eng/Build.props#L9)
-in the correct dependency order.
 * Run build with the `./build.sh -sb` command.
 * If the compilation produces numerous compilation issue - run the `./build.sh --projects <path to .csproj file>`
-command for each generated reference package separately. It may be necessary to manually tweak the code to
-address compilation issues. When this occurs, please ensure there is an [tracking issue](#filing-issues) to
-address the underlying problem with the generator.
+  command for each generated reference package separately.
+  It may be necessary to manually tweak the generated artifacts to address compilation issues.
+  When this occurs, please ensure there is an [tracking issue](#filing-issues) to address the underlying problem with the generator.
+  When making changes to the generated artifacts, it is recommended to utilize the following pre-defined constructs if possible.
+
+  * Customizations.props - Automatically imported by the generated project. Use it for additive changes such as NoWarns or additional source files.
+  * Customizations.cs - Automatically included by the generated project. Use it to add new types or members to partial classes.
+
+  You can search the code base to see example usages.
+  The benefit of using these files is that they will be preserved when the packages are regenerated.
 * Add comments calling out any modifications to the generated code that were necessary.
 
 You can search for known issues in the [Known Generator Issues Markdown file](docs/known_generator_issues.md).
+
+**Note:** When porting new packages between branches, you must regenerate the packages when crossing the 10.0/9.0 boundary.
+This is because in 10.0 the generated projects switched from using PackageReference to ProjectReference.
+Porting new packages across 10.0/9.0 boundary will introduce prebuilts.
+See the workflow documented in the servicing branch readmes for additional requirements when adding new packages pre 10.0.
 
 ### Targeting
 
@@ -96,17 +100,21 @@ a new targeting pack is needed, please [open a new issue](#filing-issues) to dis
 ./generate.sh --type text --package microsoft.build.traversal,3.1.6
 ```
 
+## Regenerating all Packages
+
+As bugs are fixed or enhancements are made to the generate tooling, it may be desirable or necessary to
+regenerate the existing packages. The following commands can be used to generate all of the reference packages.
+
+``` bash
+find src/referencePackages/src -mindepth 2 -maxdepth 2 -type d | awk -F'/' '{print $(NF-1)","$NF}' > packages.csv
+./generate.sh -x -c packages.csv
+```
+
 ## Vulnerable Packages
 
-CVEs may exist for reference packages included in this repo. If they are mitigated by a newer version, the
-newer version should be added, the vulnerable version should be removed, and references to the vulnerable
-package within other reference packages should be upgraded. A comment should be added to indicate when
-packages were manually upgraded.
-
-``` xml
-    <!-- Manually updated version from 4.3.0 to address CVE-2017-0247 -->
-    <PackageReference Include="System.Net.Security" Version="4.3.1" />
-```
+CVEs may exist for reference packages included in this repo. Because the packages do not contain any
+implementation, they do not pose a security risk. CG is configured in this repo to ignore the reference
+packages. If product repos migrate off these vulnerable packages, they can be [removed](#cleanup).
 
 ## Filing Issues
 

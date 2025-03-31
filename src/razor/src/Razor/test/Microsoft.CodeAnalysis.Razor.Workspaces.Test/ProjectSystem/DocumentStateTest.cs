@@ -27,7 +27,7 @@ public class DocumentStateTest : ToolingTestBase
     public async Task DocumentState_CreatedNew_HasEmptyText()
     {
         // Arrange & Act
-        var state = DocumentState.Create(_hostDocument, DocumentState.EmptyLoader);
+        var state = DocumentState.Create(_hostDocument, EmptyTextLoader.Instance);
 
         // Assert
         var text = await state.GetTextAsync(DisposalToken);
@@ -38,7 +38,7 @@ public class DocumentStateTest : ToolingTestBase
     public async Task DocumentState_WithText_CreatesNewState()
     {
         // Arrange
-        var original = DocumentState.Create(_hostDocument, DocumentState.EmptyLoader);
+        var original = DocumentState.Create(_hostDocument, EmptyTextLoader.Instance);
 
         // Act
         var state = original.WithText(_text, VersionStamp.Create());
@@ -52,7 +52,7 @@ public class DocumentStateTest : ToolingTestBase
     public async Task DocumentState_WithTextLoader_CreatesNewState()
     {
         // Arrange
-        var original = DocumentState.Create(_hostDocument, DocumentState.EmptyLoader);
+        var original = DocumentState.Create(_hostDocument, EmptyTextLoader.Instance);
 
         // Act
         var state = original.WithTextLoader(_textLoader);
@@ -60,101 +60,5 @@ public class DocumentStateTest : ToolingTestBase
         // Assert
         var text = await state.GetTextAsync(DisposalToken);
         Assert.Same(_text, text);
-    }
-
-    [Fact]
-    public void DocumentState_WithConfigurationChange_CachesSnapshotText()
-    {
-        // Arrange
-        var original = DocumentState.Create(_hostDocument, DocumentState.EmptyLoader)
-            .WithText(_text, VersionStamp.Create());
-
-        // Act
-        var state = original.WithConfigurationChange();
-
-        // Assert
-        Assert.True(state.TryGetText(out _));
-        Assert.True(state.TryGetTextVersion(out _));
-    }
-
-    [Fact]
-    public async Task DocumentState_WithConfigurationChange_CachesLoadedText()
-    {
-        // Arrange
-        var original = DocumentState.Create(_hostDocument, DocumentState.EmptyLoader)
-            .WithTextLoader(_textLoader);
-
-        await original.GetTextAsync(DisposalToken);
-
-        // Act
-        var state = original.WithConfigurationChange();
-
-        // Assert
-        Assert.True(state.TryGetText(out _));
-        Assert.True(state.TryGetTextVersion(out _));
-    }
-
-    [Fact]
-    public void DocumentState_WithImportsChange_CachesSnapshotText()
-    {
-        // Arrange
-        var original = DocumentState.Create(_hostDocument, DocumentState.EmptyLoader)
-            .WithText(_text, VersionStamp.Create());
-
-        // Act
-        var state = original.WithImportsChange();
-
-        // Assert
-        Assert.True(state.TryGetText(out _));
-        Assert.True(state.TryGetTextVersion(out _));
-    }
-
-    [Fact]
-    public async Task DocumentState_WithImportsChange_CachesLoadedText()
-    {
-        // Arrange
-        var original = DocumentState.Create(_hostDocument, DocumentState.EmptyLoader)
-            .WithTextLoader(_textLoader);
-
-        await original.GetTextAsync(DisposalToken);
-
-        // Act
-        var state = original.WithImportsChange();
-
-        // Assert
-        Assert.True(state.TryGetText(out _));
-        Assert.True(state.TryGetTextVersion(out _));
-    }
-
-    [Fact]
-    public void DocumentState_WithProjectWorkspaceStateChange_CachesSnapshotText()
-    {
-        // Arrange
-        var original = DocumentState.Create(_hostDocument, DocumentState.EmptyLoader)
-            .WithText(_text, VersionStamp.Create());
-
-        // Act
-        var state = original.WithProjectWorkspaceStateChange();
-
-        // Assert
-        Assert.True(state.TryGetText(out _));
-        Assert.True(state.TryGetTextVersion(out _));
-    }
-
-    [Fact]
-    public async Task DocumentState_WithProjectWorkspaceStateChange_CachesLoadedText()
-    {
-        // Arrange
-        var original = DocumentState.Create(_hostDocument, DocumentState.EmptyLoader)
-            .WithTextLoader(_textLoader);
-
-        await original.GetTextAsync(DisposalToken);
-
-        // Act
-        var state = original.WithProjectWorkspaceStateChange();
-
-        // Assert
-        Assert.True(state.TryGetText(out _));
-        Assert.True(state.TryGetTextVersion(out _));
     }
 }

@@ -17,9 +17,8 @@ internal class VisualStudioLanguageServerFeatureOptions : LanguageServerFeatureO
     private readonly Lazy<bool> _includeProjectKeyInGeneratedFilePath;
     private readonly Lazy<bool> _usePreciseSemanticTokenRanges;
     private readonly Lazy<bool> _useRazorCohostServer;
-    private readonly Lazy<bool> _disableRazorLanguageServer;
     private readonly Lazy<bool> _forceRuntimeCodeGeneration;
-    private readonly Lazy<bool> _useRoslynTokenizer;
+    private readonly Lazy<bool> _useNewFormattingEngine;
 
     [ImportingConstructor]
     public VisualStudioLanguageServerFeatureOptions(ILspEditorFeatureDetector lspEditorFeatureDetector)
@@ -59,25 +58,18 @@ internal class VisualStudioLanguageServerFeatureOptions : LanguageServerFeatureO
             return useRazorCohostServer;
         });
 
-        _disableRazorLanguageServer = new Lazy<bool>(() =>
-        {
-            var featureFlags = (IVsFeatureFlags)Package.GetGlobalService(typeof(SVsFeatureFlags));
-            var disableRazorLanguageServer = featureFlags.IsFeatureEnabled(WellKnownFeatureFlagNames.DisableRazorLanguageServer, defaultValue: false);
-            return disableRazorLanguageServer;
-        });
-
         _forceRuntimeCodeGeneration = new Lazy<bool>(() =>
         {
             var featureFlags = (IVsFeatureFlags)Package.GetGlobalService(typeof(SVsFeatureFlags));
-            var forceRuntimeCodeGeneration = featureFlags.IsFeatureEnabled(WellKnownFeatureFlagNames.ForceRuntimeCodeGeneration, defaultValue: false);
+            var forceRuntimeCodeGeneration = featureFlags.IsFeatureEnabled(WellKnownFeatureFlagNames.ForceRuntimeCodeGeneration, defaultValue: true);
             return forceRuntimeCodeGeneration;
         });
 
-        _useRoslynTokenizer = new Lazy<bool>(() =>
+        _useNewFormattingEngine = new Lazy<bool>(() =>
         {
             var featureFlags = (IVsFeatureFlags)Package.GetGlobalService(typeof(SVsFeatureFlags));
-            var useRoslynTokenizer = featureFlags.IsFeatureEnabled(WellKnownFeatureFlagNames.UseRoslynTokenizer, defaultValue: false);
-            return useRoslynTokenizer;
+            var useNewFormattingEngine = featureFlags.IsFeatureEnabled(WellKnownFeatureFlagNames.UseNewFormattingEngine, defaultValue: true);
+            return useNewFormattingEngine;
         });
     }
 
@@ -106,10 +98,17 @@ internal class VisualStudioLanguageServerFeatureOptions : LanguageServerFeatureO
 
     public override bool UseRazorCohostServer => _useRazorCohostServer.Value;
 
-    public override bool DisableRazorLanguageServer => _disableRazorLanguageServer.Value;
-
     /// <inheritdoc />
     public override bool ForceRuntimeCodeGeneration => _forceRuntimeCodeGeneration.Value;
 
-    public override bool UseRoslynTokenizer => _useRoslynTokenizer.Value;
+    public override bool UseNewFormattingEngine => _useNewFormattingEngine.Value;
+
+    // VS actually needs explicit commit characters so don't avoid them.
+    public override bool SupportsSoftSelectionInCompletion => true;
+
+    public override bool UseVsCodeCompletionTriggerCharacters => false;
+
+    // In VS, we do not want the language server to add all documents in the workspace root path
+    // to the misc-files project when initialized.
+    public override bool DoNotInitializeMiscFilesProjectFromWorkspace => true;
 }

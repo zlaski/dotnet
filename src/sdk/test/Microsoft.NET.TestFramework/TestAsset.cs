@@ -120,9 +120,13 @@ namespace Microsoft.NET.TestFramework
                 if (p.Root is not null)
                 {
                     var ns = p.Root.Name.Namespace;
-                    var getNode = p.Root.Elements(ns + "PropertyGroup").Elements(ns + propertyName).FirstOrDefault();
-                    getNode ??= p.Root.Elements(ns + "PropertyGroup").Elements(ns + $"{propertyName}s").FirstOrDefault();
-                    getNode?.SetValue(getNode?.Value.Replace($"$({variableName})", targetValue) ?? string.Empty);
+                    var nodes = p.Root.Elements(ns + "PropertyGroup").Elements(ns + propertyName).Concat(
+                                p.Root.Elements(ns + "PropertyGroup").Elements(ns + $"{propertyName}s"));
+
+                    foreach (var node in nodes)
+                    {
+                        node.SetValue(node.Value.Replace($"$({variableName})", targetValue));
+                    }
                 }
             });
         }
@@ -144,14 +148,13 @@ namespace Microsoft.NET.TestFramework
                                 .Where(va => va is not null && va.Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
                         foreach (var versionAttribute in packageReferencesToUpdate)
                         {
-                            if(versionAttribute is not null)
+                            if (versionAttribute is not null)
                             {
                                 versionAttribute.Value = targetValue;
                             }
                         }
                     }
                 }
-                
             });
         }
 
@@ -265,6 +268,32 @@ namespace Microsoft.NET.TestFramework
             commandResult.Should().Pass();
 
             return this;
+        }
+
+        public string ReadMSTestVersionFromProps(string propsFilePath)
+        {
+            XDocument doc = XDocument.Load(propsFilePath);
+            XElement? msTestVersionElement = doc.Descendants("MSTestVersion").FirstOrDefault();
+            return msTestVersionElement?.Value ?? throw new InvalidOperationException("MSTestVersion not found in Version.props");
+        }
+
+        public void UpdateProjectFileWithMSTestVersion(string projectPath, string msTestVersion)
+        {
+            if (projectPath is null)
+            {
+                throw new FileNotFoundException("No .csproj file found in the project directory.");
+            }
+
+            XDocument csprojDoc = XDocument.Load(projectPath);
+            XElement? projectElement = csprojDoc.Element("Project");
+            if (projectElement == null)
+            {
+                throw new InvalidOperationException("Invalid .csproj file format.");
+            }
+
+            projectElement.SetAttributeValue("Sdk", $"MSTest.Sdk/{msTestVersion}");
+
+            csprojDoc.Save(projectPath);
         }
 
         private bool IsBinOrObjFolder(string directory)

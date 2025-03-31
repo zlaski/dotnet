@@ -160,7 +160,6 @@ public abstract class CodeActionEndToEndTestBase(ITestOutputHelper testOutput) :
             diagnostics,
             selectionRange: selectionRange);
 
-        Assert.NotEmpty(result);
         var codeActionToRun = GetCodeActionToRun(codeAction, childActionIndex, result);
 
         if (expected is null)
@@ -192,7 +191,7 @@ public abstract class CodeActionEndToEndTestBase(ITestOutputHelper testOutput) :
 
     internal static VSInternalCodeAction? GetCodeActionToRun(string codeAction, int childActionIndex, SumType<Command, CodeAction>[] result)
     {
-        var codeActionToRun = (VSInternalCodeAction?)result.SingleOrDefault(e => ((RazorVSInternalCodeAction)e.Value!).Name == codeAction || ((RazorVSInternalCodeAction)e.Value!).Title == codeAction).Value;
+        var codeActionToRun = (VSInternalCodeAction?)result.SingleOrDefault(e => ((RazorVSInternalCodeAction)e.Value!).Name == codeAction).Value;
         if (codeActionToRun?.Children?.Length > 0)
         {
             codeActionToRun = codeActionToRun.Children[childActionIndex];
@@ -292,7 +291,7 @@ public abstract class CodeActionEndToEndTestBase(ITestOutputHelper testOutput) :
 
     internal static ImmutableArray<TagHelperDescriptor> CreateTagHelperDescriptors()
     {
-        return BuildTagHelpers().ToImmutableArray();
+        return [.. BuildTagHelpers()];
 
         static IEnumerable<TagHelperDescriptor> BuildTagHelpers()
         {
@@ -321,6 +320,51 @@ public abstract class CodeActionEndToEndTestBase(ITestOutputHelper testOutput) :
                 new KeyValuePair<string, string>(ComponentMetadata.SpecialKindKey, ComponentMetadata.Ref.TagHelperKind),
                 new KeyValuePair<string, string>(ComponentMetadata.Common.DirectiveAttribute, bool.TrueString));
 
+            yield return builder.Build();
+
+            // Sets up a component to make the following available
+            // <TestGenericComponent
+            //   TItem="string"
+            //   OnDragStart="OnDragStart" />
+            //
+            //
+            // @code
+            // {
+            //     void OnDragStart(<Microsoft.AspNetCore.Components.Web.DragEventArgs<string> args) {}
+            // }
+            builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Component.TagHelperKind, "TestGenericComponent", "Microsoft.AspNetCore.Components");
+            builder.BoundAttributeDescriptor(configure => configure
+                .Name("OnDragStart")
+                .TypeName("System.Action<Microsoft.AspNetCore.Components.Web.DragEventArgs<TItem>>")
+                .Metadata(new(ComponentMetadata.Component.DelegateSignatureKey, bool.TrueString), new(ComponentMetadata.Component.GenericTypedKey, bool.TrueString)));
+            builder.BoundAttributeDescriptor(configure => configure
+                .Name("TItem")
+                .Metadata(new(ComponentMetadata.Component.TypeParameterKey, bool.TrueString), new(TagHelperMetadata.Common.PropertyName, "TItem")));
+            builder.TagMatchingRule(rule => rule.RequireTagName("TestGenericComponent"));
+            builder.Metadata(
+                new(TagHelperMetadata.Common.TypeName, "Microsoft.AspNetCore.Components.TestGenericComponent"),
+                new(TagHelperMetadata.Common.TypeNamespace, "Microsoft.AspNetCore.Components"),
+                new(TagHelperMetadata.Common.TypeNameIdentifier, "TestGenericComponent"));
+            yield return builder.Build();
+
+            // Sets up a component to make the following available
+            // <TestComponent OnDragStart="OnDragStart" />
+            //
+            //
+            // @code
+            // {
+            //     void OnDragStart(<Microsoft.AspNetCore.Components.Web.DragEventArgs args) {}
+            // }
+            builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Component.TagHelperKind, "TestComponent", "Microsoft.AspNetCore.Components");
+            builder.BoundAttributeDescriptor(configure => configure
+                .Name("OnDragStart")
+                .TypeName("System.Action<Microsoft.AspNetCore.Components.Web.DragEventArgs>")
+                .Metadata(new(ComponentMetadata.Component.DelegateSignatureKey, bool.TrueString)));
+            builder.TagMatchingRule(rule => rule.RequireTagName("TestComponent"));
+            builder.Metadata(
+                new(TagHelperMetadata.Common.TypeName, "Microsoft.AspNetCore.Components.TestComponent"),
+                new(TagHelperMetadata.Common.TypeNamespace, "Microsoft.AspNetCore.Components"),
+                new(TagHelperMetadata.Common.TypeNameIdentifier, "TestComponent"));
             yield return builder.Build();
         }
     }

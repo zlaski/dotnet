@@ -228,7 +228,7 @@ namespace NuGet.CommandLine.XPlat
             }
             // Ignore the graphs with RID
             else if (compatibleFrameworks.Count ==
-                restorePreviewResult.Result.CompatibilityCheckResults.Where(r => string.IsNullOrEmpty(r.Graph.RuntimeIdentifier)).Count())
+                     restorePreviewResult.Result.CompatibilityCheckResults.Count(r => string.IsNullOrEmpty(r.Graph.RuntimeIdentifier)))
             {
                 // Package is compatible with all the project TFMs
                 // Add an unconditional package reference to the project
@@ -272,7 +272,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static string GetAliasForFramework(PackageSpec spec, NuGetFramework framework)
         {
-            return spec.TargetFrameworks.Where(e => e.FrameworkName.Equals(framework)).FirstOrDefault()?.TargetAlias;
+            return spec.TargetFrameworks.FirstOrDefault(e => e.FrameworkName.Equals(framework))?.TargetAlias;
         }
 
         public static async Task<NuGetVersion> GetLatestVersionAsync(PackageSpec originalPackageSpec, string packageId, ILogger logger, bool prerelease)
@@ -317,7 +317,9 @@ namespace NuGet.CommandLine.XPlat
             var nuspecFilePath = Path.GetFullPath(Path.Combine(packageDirectory, nuspecFile));
 
             // read development dependency from nuspec file
-            var developmentDependency = new NuspecReader(nuspecFilePath).GetDevelopmentDependency();
+            NuspecReader nuspecReader = new(nuspecFilePath);
+            var developmentDependency = nuspecReader.GetDevelopmentDependency();
+            string packageId = nuspecReader.GetId();
 
             if (developmentDependency)
             {
@@ -343,7 +345,7 @@ namespace NuGet.CommandLine.XPlat
                     dependency = new LibraryDependency(dependency)
                     {
                         IncludeType = includeType,
-                        LibraryRange = new LibraryRange(dependency.LibraryRange) { VersionRange = version },
+                        LibraryRange = new LibraryRange(dependency.LibraryRange) { VersionRange = version, Name = packageId },
                         SuppressParent = suppressParent,
                         VersionCentrallyManaged = isCentralPackageManagementEnabled,
                     };
@@ -358,7 +360,7 @@ namespace NuGet.CommandLine.XPlat
             return new LibraryDependency()
             {
                 LibraryRange = new LibraryRange(
-                    name: packageReferenceArgs.PackageId,
+                    name: packageId,
                     versionRange: version,
                     typeConstraint: LibraryDependencyTarget.Package),
                 VersionCentrallyManaged = isCentralPackageManagementEnabled

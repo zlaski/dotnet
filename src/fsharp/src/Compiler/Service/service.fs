@@ -117,7 +117,8 @@ type FSharpChecker
         captureIdentifiersWhenParsing,
         getSource,
         useChangeNotifications,
-        useTransparentCompiler
+        useTransparentCompiler,
+        ?transparentCompilerCacheSizes
     ) =
 
     let backgroundCompiler =
@@ -135,7 +136,8 @@ type FSharpChecker
                 parallelReferenceResolution,
                 captureIdentifiersWhenParsing,
                 getSource,
-                useChangeNotifications
+                useChangeNotifications,
+                ?cacheSizes = transparentCompilerCacheSizes
             )
             :> IBackgroundCompiler
         else
@@ -198,7 +200,8 @@ type FSharpChecker
             ?parallelReferenceResolution: bool,
             ?captureIdentifiersWhenParsing: bool,
             ?documentSource: DocumentSource,
-            ?useTransparentCompiler: bool
+            ?useTransparentCompiler: bool,
+            ?transparentCompilerCacheSizes: CacheSizes
         ) =
 
         use _ = Activity.startNoTags "FSharpChecker.Create"
@@ -247,7 +250,8 @@ type FSharpChecker
              | Some(DocumentSource.Custom f) -> Some f
              | _ -> None),
             useChangeNotifications,
-            useTransparentCompiler
+            useTransparentCompiler,
+            ?transparentCompilerCacheSizes = transparentCompilerCacheSizes
         )
 
     member _.UsesTransparentCompiler = useTransparentCompiler = Some true
@@ -385,14 +389,8 @@ type FSharpChecker
     /// Typecheck a source code file, returning a handle to the results of the
     /// parse including the reconstructed types in the file.
     member _.CheckFileInProjectAllowingStaleCachedResults
-        (
-            parseResults: FSharpParseFileResults,
-            fileName: string,
-            fileVersion: int,
-            source: string,
-            options: FSharpProjectOptions,
-            ?userOpName: string
-        ) =
+        (parseResults: FSharpParseFileResults, fileName: string, fileVersion: int, source: string, options: FSharpProjectOptions, ?userOpName: string)
+        =
         let userOpName = defaultArg userOpName "Unknown"
 
         backgroundCompiler.CheckFileInProjectAllowingStaleCachedResults(
@@ -422,13 +420,8 @@ type FSharpChecker
     /// Typecheck a source code file, returning a handle to the results of the
     /// parse including the reconstructed types in the file.
     member _.ParseAndCheckFileInProject
-        (
-            fileName: string,
-            fileVersion: int,
-            sourceText: ISourceText,
-            options: FSharpProjectOptions,
-            ?userOpName: string
-        ) =
+        (fileName: string, fileVersion: int, sourceText: ISourceText, options: FSharpProjectOptions, ?userOpName: string)
+        =
         let userOpName = defaultArg userOpName "Unknown"
 
         backgroundCompiler.ParseAndCheckFileInProject(fileName, fileVersion, sourceText, options, userOpName)
@@ -449,14 +442,8 @@ type FSharpChecker
         backgroundCompiler.ParseAndCheckProject(projectSnapshot, userOpName)
 
     member _.FindBackgroundReferencesInFile
-        (
-            fileName: string,
-            options: FSharpProjectOptions,
-            symbol: FSharpSymbol,
-            ?canInvalidateProject: bool,
-            ?fastCheck: bool,
-            ?userOpName: string
-        ) =
+        (fileName: string, options: FSharpProjectOptions, symbol: FSharpSymbol, ?canInvalidateProject: bool, ?fastCheck: bool, ?userOpName: string)
+        =
         let canInvalidateProject = defaultArg canInvalidateProject true
         let userOpName = defaultArg userOpName "Unknown"
 
@@ -505,6 +492,7 @@ type FSharpChecker
         (
             fileName,
             source,
+            ?caret,
             ?previewEnabled,
             ?loadedTimeStamp,
             ?otherFlags,
@@ -520,6 +508,7 @@ type FSharpChecker
         backgroundCompiler.GetProjectOptionsFromScript(
             fileName,
             source,
+            caret,
             previewEnabled,
             loadedTimeStamp,
             otherFlags,
@@ -536,6 +525,7 @@ type FSharpChecker
         (
             fileName,
             source,
+            ?caret,
             ?documentSource,
             ?previewEnabled,
             ?loadedTimeStamp,
@@ -553,6 +543,7 @@ type FSharpChecker
         backgroundCompiler.GetProjectSnapshotFromScript(
             fileName,
             source,
+            caret,
             documentSource,
             previewEnabled,
             loadedTimeStamp,

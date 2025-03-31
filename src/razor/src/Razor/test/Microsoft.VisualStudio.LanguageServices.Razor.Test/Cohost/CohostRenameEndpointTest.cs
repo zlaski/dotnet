@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.Razor.LanguageClient.Cohost;
 
 public class CohostRenameEndpointTest(ITestOutputHelper testOutputHelper) : CohostEndpointTestBase(testOutputHelper)
 {
-    [Fact]
+    [Fact(Skip = "Cannot edit source generated documents")]
     public Task CSharp_Method()
         => VerifyRenamesAsync(
             input: """
@@ -53,7 +53,7 @@ public class CohostRenameEndpointTest(ITestOutputHelper testOutputHelper) : Coho
                 The end.
                 """);
 
-    [Theory]
+    [Theory(Skip = "Cannot edit source generated documents")]
     [InlineData("$$Component")]
     [InlineData("Com$$ponent")]
     [InlineData("Component$$")]
@@ -78,15 +78,6 @@ public class CohostRenameEndpointTest(ITestOutputHelper testOutputHelper) : Coho
                 The end.
                 """,
             additionalFiles: [
-                // The source generator isn't hooked up to our test project, so we have to manually "compile" the razor file
-                (FilePath("Component.cs"), """
-                    namespace SomeProject;
-
-                    public class Component : Microsoft.AspNetCore.Components.ComponentBase
-                    {
-                    }
-                    """),
-                // The above will make the component exist, but the .razor file needs to exist too for Uri presentation
                 (FilePath("Component.razor"), "")
             ],
             newName: "DifferentName",
@@ -110,7 +101,7 @@ public class CohostRenameEndpointTest(ITestOutputHelper testOutputHelper) : Coho
                 """,
             renames: [("Component.razor", "DifferentName.razor")]);
 
-    [Theory]
+    [Theory(Skip = "Cannot edit source generated documents")]
     [InlineData("$$Component")]
     [InlineData("Com$$ponent")]
     [InlineData("Component$$")]
@@ -135,15 +126,6 @@ public class CohostRenameEndpointTest(ITestOutputHelper testOutputHelper) : Coho
                 The end.
                 """,
             additionalFiles: [
-                // The source generator isn't hooked up to our test project, so we have to manually "compile" the razor file
-                (FilePath("Component.cs"), """
-                    namespace SomeProject;
-
-                    public class Component : Microsoft.AspNetCore.Components.ComponentBase
-                    {
-                    }
-                    """),
-                // The above will make the component exist, but the .razor file needs to exist too for Uri presentation
                 (FilePath("Component.razor"), "")
             ],
             newName: "DifferentName",
@@ -178,15 +160,6 @@ public class CohostRenameEndpointTest(ITestOutputHelper testOutputHelper) : Coho
                 The end.
                 """,
            additionalFiles: [
-               // The source generator isn't hooked up to our test project, so we have to manually "compile" the razor file
-               (FilePath("Component.cs"), """
-                    namespace SomeProject;
-
-                    public class Component : Microsoft.AspNetCore.Components.ComponentBase
-                    {
-                    }
-                    """),
-                // The above will make the component exist, but the .razor file needs to exist too for Uri presentation
                 (FilePath("Component.razor"), "")
            ],
            newName: "DifferentName",
@@ -196,7 +169,7 @@ public class CohostRenameEndpointTest(ITestOutputHelper testOutputHelper) : Coho
     private async Task VerifyRenamesAsync(string input, string newName, string expected, string? fileKind = null, (string fileName, string contents)[]? additionalFiles = null, (string oldName, string newName)[]? renames = null)
     {
         TestFileMarkupParser.GetPosition(input, out var source, out var cursorPosition);
-        var document = await CreateProjectAndRazorDocumentAsync(source, fileKind, additionalFiles);
+        var document = CreateProjectAndRazorDocument(source, fileKind, additionalFiles);
         var inputText = await document.GetTextAsync(DisposalToken);
         var position = inputText.GetPosition(cursorPosition);
 

@@ -16,15 +16,16 @@ using Microsoft.CodeAnalysis.Razor.Logging;
 using Microsoft.CodeAnalysis.Razor.Protocol;
 using Microsoft.CodeAnalysis.Razor.Protocol.Completion;
 using Microsoft.CodeAnalysis.Razor.Remote;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Razor.Settings;
 using Microsoft.VisualStudio.Razor.Snippets;
 using Response = Microsoft.CodeAnalysis.Razor.Remote.RemoteResponse<Microsoft.VisualStudio.LanguageServer.Protocol.VSInternalCompletionList?>;
+using RoslynCompletionContext = Roslyn.LanguageServer.Protocol.CompletionContext;
 using RoslynCompletionParams = Roslyn.LanguageServer.Protocol.CompletionParams;
 using RoslynLspExtensions = Roslyn.LanguageServer.Protocol.RoslynLspExtensions;
 using RoslynPosition = Roslyn.LanguageServer.Protocol.Position;
-using RoslynCompletionContext = Roslyn.LanguageServer.Protocol.CompletionContext;
 
 namespace Microsoft.VisualStudio.Razor.LanguageClient.Cohost;
 
@@ -40,6 +41,7 @@ internal sealed class CohostDocumentCompletionEndpoint(
     IClientSettingsManager clientSettingsManager,
     IHtmlDocumentSynchronizer htmlDocumentSynchronizer,
     SnippetCompletionItemProvider snippetCompletionItemProvider,
+    LanguageServerFeatureOptions languageServerFeatureOptions,
     LSPRequestInvoker requestInvoker,
     ILoggerFactory loggerFactory)
     : AbstractRazorCohostDocumentRequestHandler<RoslynCompletionParams, VSInternalCompletionList?>, IDynamicRegistrationProvider
@@ -48,6 +50,7 @@ internal sealed class CohostDocumentCompletionEndpoint(
     private readonly IClientSettingsManager _clientSettingsManager = clientSettingsManager;
     private readonly IHtmlDocumentSynchronizer _htmlDocumentSynchronizer = htmlDocumentSynchronizer;
     private readonly SnippetCompletionItemProvider _snippetCompletionItemProvider = snippetCompletionItemProvider;
+    private readonly CompletionTriggerAndCommitCharacters _triggerAndCommitCharacters = new(languageServerFeatureOptions);
     private readonly LSPRequestInvoker _requestInvoker = requestInvoker;
     private readonly ILogger _logger = loggerFactory.GetOrCreateLogger<CohostDocumentCompletionEndpoint>();
 
@@ -65,8 +68,8 @@ internal sealed class CohostDocumentCompletionEndpoint(
                 RegisterOptions = new CompletionRegistrationOptions()
                 {
                     ResolveProvider = false, // TODO - change to true when Resolve is implemented
-                    TriggerCharacters = CompletionTriggerAndCommitCharacters.AllTriggerCharacters,
-                    AllCommitCharacters = CompletionTriggerAndCommitCharacters.AllCommitCharacters
+                    TriggerCharacters = [.. _triggerAndCommitCharacters.AllTriggerCharacters],
+                    AllCommitCharacters = [.. _triggerAndCommitCharacters.AllCommitCharacters]
                 }
             }];
         }
@@ -116,7 +119,12 @@ internal sealed class CohostDocumentCompletionEndpoint(
         var documentPositionInfo = completionPositionInfo.DocumentPositionInfo;
         if (documentPositionInfo.LanguageKind != RazorLanguageKind.Razor)
         {
-            completionContext = DelegatedCompletionHelper.RewriteContext(completionContext, documentPositionInfo.LanguageKind);
+            if (DelegatedCompletionHelper.RewriteContext(completionContext, documentPositionInfo.LanguageKind, _triggerAndCommitCharacters) is not { } rewrittenContext)
+            {
+                return null;
+            }
+
+            completionContext = rewrittenContext;
         }
 
         // First of all, see if we in HTML and get HTML completions before calling OOP to get Razor completions.
@@ -129,14 +137,15 @@ internal sealed class CohostDocumentCompletionEndpoint(
             CommitElementsWithSpace: clientSettings.AdvancedSettings.CommitElementsWithSpace);
         using var _ = HashSetPool<string>.GetPooledObject(out var existingHtmlCompletions);
 
-        if (CompletionTriggerAndCommitCharacters.IsValidTrigger(CompletionTriggerAndCommitCharacters.HtmlTriggerCharacters, completionContext))
+        if (_triggerAndCommitCharacters.IsValidHtmlTrigger(completionContext))
         {
             // We can just blindly call HTML LSP because if we are in C#, generated HTML seen by HTML LSP may return
             // results we don't want to show. So we want to call HTML LSP only if we know we are in HTML content.
             if (documentPositionInfo.LanguageKind == RazorLanguageKind.Html)
             {
-                htmlCompletionList = await GetHtmlCompletionListAsync(request, razorDocument, razorCompletionOptions, cancellationToken)
-                                                                      .ConfigureAwait(false);
+                htmlCompletionList = await GetHtmlCompletionListAsync(
+                    request, razorDocument, razorCompletionOptions, cancellationToken).ConfigureAwait(false);
+
                 if (htmlCompletionList is not null)
                 {
                     existingHtmlCompletions.UnionWith(htmlCompletionList.Items.Select(i => i.Label));

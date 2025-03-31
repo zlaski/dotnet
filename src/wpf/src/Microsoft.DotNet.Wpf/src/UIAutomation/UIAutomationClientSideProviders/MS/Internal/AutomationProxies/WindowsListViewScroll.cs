@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -18,7 +18,7 @@ namespace MS.Internal.AutomationProxies
     // The default implementation for scroll bars uses SB_THUMBTRACK and SB_THUMBPOSITION for SetValue
     // This does not work with listview so the Scrollbar is overloaded with a derived version that
     // uses LVM_SCROLL messages instead
-    class WindowsListViewScrollBar: WindowsScrollBar, IRangeValueProvider
+    internal class WindowsListViewScrollBar: WindowsScrollBar, IRangeValueProvider
         {
 
             // ------------------------------------------------------
@@ -50,9 +50,11 @@ namespace MS.Internal.AutomationProxies
                     throw new ElementNotEnabledException();
                 }
 
-                NativeMethods.ScrollInfo si = new NativeMethods.ScrollInfo ();
-                si.fMask = NativeMethods.SIF_ALL;
-                si.cbSize = Marshal.SizeOf (si.GetType ());
+            NativeMethods.ScrollInfo si = new NativeMethods.ScrollInfo
+            {
+                fMask = NativeMethods.SIF_ALL
+            };
+            si.cbSize = Marshal.SizeOf (si.GetType ());
 
                 if (!Misc.GetScrollInfo(_hwnd, _sbFlag, ref si))
                 {

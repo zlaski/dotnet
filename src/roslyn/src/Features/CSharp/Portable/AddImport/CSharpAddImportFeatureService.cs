@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
 using System.Threading;
@@ -574,7 +573,7 @@ internal sealed class CSharpAddImportFeatureService() : AbstractAddImportFeature
             return (null, false);
         }
 
-        aliases = metadataReference.Properties.Aliases.Where(a => a != MetadataReferenceProperties.GlobalAlias).ToImmutableArray();
+        aliases = [.. metadataReference.Properties.Aliases.Where(a => a != MetadataReferenceProperties.GlobalAlias)];
         if (!aliases.Any())
         {
             return (null, false);

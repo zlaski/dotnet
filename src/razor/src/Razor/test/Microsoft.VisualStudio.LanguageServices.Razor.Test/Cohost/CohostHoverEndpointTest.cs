@@ -185,7 +185,7 @@ public class CohostHoverEndpointTest(ITestOutputHelper testOutputHelper) : Cohos
 
     private async Task VerifyHoverAsync(TestCode input, Func<RoslynHover, TextDocument, Task> verifyHover)
     {
-        var document = await CreateProjectAndRazorDocumentAsync(input.Text);
+        var document = CreateProjectAndRazorDocument(input.Text);
         var result = await GetHoverResultAsync(document, input);
 
         Assert.NotNull(result);
@@ -197,7 +197,7 @@ public class CohostHoverEndpointTest(ITestOutputHelper testOutputHelper) : Cohos
 
     private async Task VerifyHoverAsync(TestCode input, Hover htmlResponse, Action<Hover?> verifyHover)
     {
-        var document = await CreateProjectAndRazorDocumentAsync(input.Text);
+        var document = CreateProjectAndRazorDocument(input.Text);
         var result = await GetHoverResultAsync(document, input, htmlResponse);
 
         Assert.NotNull(result);

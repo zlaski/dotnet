@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -17,7 +17,7 @@ using Microsoft.Win32.SafeHandles;
 
 namespace MS.Internal.AutomationProxies
 {
-    class QueueProcessor
+    internal class QueueProcessor
     {
         // ------------------------------------------------------
         //
@@ -56,8 +56,10 @@ namespace MS.Internal.AutomationProxies
         internal void StartOnThread ()
         {
             ThreadStart threadStart = new ThreadStart(WaitForWork);
-            Thread thread = new Thread(threadStart);
-            thread.IsBackground = true;
+            Thread thread = new Thread(threadStart)
+            {
+                IsBackground = true
+            };
             thread.Start();
         }
 
@@ -165,7 +167,7 @@ namespace MS.Internal.AutomationProxies
     #region QueueItem Abstract Class
 
     // Abstract class for worker objects queued to the QueueProcessor class
-    abstract class QueueItem
+    internal abstract class QueueItem
     {
         // ------------------------------------------------------
         //

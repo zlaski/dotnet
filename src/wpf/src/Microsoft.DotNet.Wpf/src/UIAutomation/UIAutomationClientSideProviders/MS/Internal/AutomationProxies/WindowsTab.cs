@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -23,7 +23,7 @@ using NativeMethodsSetLastError = MS.Internal.UIAutomationClientSideProviders.Na
 
 namespace MS.Internal.AutomationProxies
 {
-    class WindowsTab: ProxyHwnd, ISelectionProvider, IScrollProvider, IRawElementProviderHwndOverride
+    internal class WindowsTab: ProxyHwnd, ISelectionProvider, IScrollProvider, IRawElementProviderHwndOverride
     {
         // ------------------------------------------------------
         //
@@ -108,10 +108,7 @@ namespace MS.Internal.AutomationProxies
                     el = new WindowsTab(hwnd, null, -1);
                     break;
             }
-            if (el != null)
-            {
-                el.DispatchEvents (eventId, idProp, idObject, idChild);
-            }
+            el?.DispatchEvents (eventId, idProp, idObject, idChild);
         }
 
         #endregion
@@ -255,9 +252,10 @@ namespace MS.Internal.AutomationProxies
         // Returns a Proxy element corresponding to the specified screen coordinates.
         internal override ProxySimple ElementProviderFromPoint (int x, int y)
         {
-            UnsafeNativeMethods.TCHITTESTINFO hti = new UnsafeNativeMethods.TCHITTESTINFO();
-
-            hti.pt = new NativeMethods.Win32Point (x, y);
+            UnsafeNativeMethods.TCHITTESTINFO hti = new UnsafeNativeMethods.TCHITTESTINFO
+            {
+                pt = new NativeMethods.Win32Point(x, y)
+            };
 
             if (!Misc.MapWindowPoints(IntPtr.Zero, _hwnd, ref hti.pt, 1))
             {
@@ -318,10 +316,7 @@ namespace MS.Internal.AutomationProxies
                 {
                     // Register for UpDown ValueChange WinEvents, which will be
                     // translated to scrolling events for the tab control.
-                    WinEventTracker.AddToNotificationList(
-                        upDownHwnd,
-                        new WinEventTracker.ProxyRaiseEvents(UpDownControlRaiseEvents),
-                        _upDownEvents, 1);
+                    WinEventTracker.AddToNotificationList(upDownHwnd, new WinEventTracker.ProxyRaiseEvents(UpDownControlRaiseEvents), _upDownEvents);
                 }
             }
 
@@ -338,8 +333,7 @@ namespace MS.Internal.AutomationProxies
                 IntPtr upDownHwnd = GetUpDownHwnd();
                 if (upDownHwnd != IntPtr.Zero)
                 {
-                    WinEventTracker.RemoveToNotificationList(
-                        upDownHwnd, _upDownEvents, null, 1);
+                    WinEventTracker.RemoveToNotificationList(upDownHwnd, _upDownEvents, null);
                 }
             }
             base.AdviseEventRemoved(eventId, aidProps);
@@ -496,7 +490,7 @@ namespace MS.Internal.AutomationProxies
             }
             else if (horizontalPercent < 0 || horizontalPercent > 100)
             {
-                throw new ArgumentOutOfRangeException("horizontalPercent", SR.ScrollBarOutOfRange);
+                throw new ArgumentOutOfRangeException(nameof(horizontalPercent), SR.ScrollBarOutOfRange);
             }
 
             // Get up/down control's hwnd
@@ -573,9 +567,10 @@ namespace MS.Internal.AutomationProxies
                 // Get rectangles
                 Rect firstRect = firstChild.BoundingRectangle;
                 Rect lastRect = lastChild.BoundingRectangle;
-                NativeMethods.Win32Rect viewable = new NativeMethods.Win32Rect ();
-
-                viewable.left = 0;
+                NativeMethods.Win32Rect viewable = new NativeMethods.Win32Rect
+                {
+                    left = 0
+                };
                 if (!Misc.GetWindowRect(_hwnd, ref viewable))
                 {
                     return 100.0;
@@ -893,7 +888,7 @@ namespace MS.Internal.AutomationProxies
 
     #region WindowsTabItem
 
-    class WindowsTabItem : ProxyFragment, ISelectionItemProvider, IScrollItemProvider
+    internal class WindowsTabItem : ProxyFragment, ISelectionItemProvider, IScrollItemProvider
     {
         // ------------------------------------------------------
         //
@@ -1363,7 +1358,7 @@ namespace MS.Internal.AutomationProxies
         #region Private Fields
 
         // Cached value for a winform
-        bool _fIsWinform;
+        private bool _fIsWinform;
 
         #endregion Private Fields
     }
@@ -1378,7 +1373,7 @@ namespace MS.Internal.AutomationProxies
 
     #region WindowsTabChildOverrideProxy
 
-    class WindowsTabChildOverrideProxy : ProxyHwnd
+    internal class WindowsTabChildOverrideProxy : ProxyHwnd
     {
         // ------------------------------------------------------
         //

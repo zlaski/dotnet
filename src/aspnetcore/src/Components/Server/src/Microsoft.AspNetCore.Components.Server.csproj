@@ -22,7 +22,7 @@
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <!-- Required for S.T.J source generation -->
-    <Reference Include="System.Text.Json" PrivateAssets="All" />
+    <Reference Include="System.Text.Json" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
 
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
@@ -48,7 +48,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperation.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationBatch.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationType.cs" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RootTypeCache.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" />
 

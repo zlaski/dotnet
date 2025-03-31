@@ -4,6 +4,7 @@
 
 #nullable disable
 
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reflection;
 using System.Windows.Markup;
@@ -80,10 +81,12 @@ namespace System.Xaml.Schema
             {
                 if (s_UnknownReflector is null)
                 {
-                    s_UnknownReflector = new MemberReflector();
-                    s_UnknownReflector._designerSerializationVisibility = DesignerSerializationVisibility.Visible;
-                    s_UnknownReflector._memberBits = (int)BoolMemberBits.Default |
-                        (int)BoolMemberBits.Unknown | (int)BoolMemberBits.AllValid;
+                    s_UnknownReflector = new MemberReflector
+                    {
+                        _designerSerializationVisibility = DesignerSerializationVisibility.Visible,
+                        _memberBits = (int)BoolMemberBits.Default |
+                        (int)BoolMemberBits.Unknown | (int)BoolMemberBits.AllValid
+                    };
 
                     // Explicitly set all the nullable references so that IsSet is true
                     s_UnknownReflector._deferringLoader.Value = null;
@@ -92,7 +95,7 @@ namespace System.Xaml.Schema
                     s_UnknownReflector._typeConverter.Value = null;
                     s_UnknownReflector._valueSerializer.Value = null;
 
-                    s_UnknownReflector.DependsOn = XamlType.EmptyList<XamlMember>.Value;
+                    s_UnknownReflector.DependsOn = ReadOnlyCollection<XamlMember>.Empty;
                     s_UnknownReflector.Invoker = XamlMemberInvoker.UnknownInvoker;
                     s_UnknownReflector.Type = XamlLanguage.Object;
                 }
@@ -115,7 +118,7 @@ namespace System.Xaml.Schema
             get { return _constructorArgument.IsSet; }
         }
 
-        internal IReadOnlyDictionary<char,char> MarkupExtensionBracketCharactersArgument { get; set; }
+        internal IReadOnlyDictionary<char, char> MarkupExtensionBracketCharactersArgument { get; set; }
 
         internal bool MarkupExtensionBracketCharactersArgumentIsSet { get; set; }
 

@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.ProjectEngineHost;
+using Microsoft.AspNetCore.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor.Logging;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
@@ -17,7 +17,7 @@ internal partial class TestProjectSnapshotManager(
     ILoggerFactory loggerFactory,
     CancellationToken disposalToken,
     Action<ProjectSnapshotManager.Updater>? initializer = null)
-    : ProjectSnapshotManager(projectEngineFactoryProvider, languageServerFeatureOptions, loggerFactory, initializer)
+    : ProjectSnapshotManager(projectEngineFactoryProvider, languageServerFeatureOptions.ToCompilerOptions(), loggerFactory, initializer)
 {
     private readonly CancellationToken _disposalToken = disposalToken;
 

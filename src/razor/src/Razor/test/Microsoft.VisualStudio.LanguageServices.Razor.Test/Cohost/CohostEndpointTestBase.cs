@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Basic.Reference.Assemblies;
 using Microsoft.AspNetCore.Razor;
@@ -13,22 +14,24 @@ using Microsoft.AspNetCore.Razor.Test.Common.Mef;
 using Microsoft.AspNetCore.Razor.Test.Common.Workspaces;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor.Remote;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Remote.Razor;
-using Microsoft.CodeAnalysis.Remote.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Remote.Razor.SemanticTokens;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.NET.Sdk.Razor.SourceGenerators;
 using Microsoft.VisualStudio.Composition;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Xunit;
+using Roslyn.Test.Utilities;
 using Xunit.Abstractions;
 
 namespace Microsoft.VisualStudio.Razor.LanguageClient.Cohost;
 
 public abstract class CohostEndpointTestBase(ITestOutputHelper testOutputHelper) : ToolingTestBase(testOutputHelper)
 {
-    private const string CSharpVirtualDocumentSuffix = ".g.cs";
     private ExportProvider? _exportProvider;
     private TestRemoteServiceInvoker? _remoteServiceInvoker;
     private RemoteClientInitializationOptions _clientInitializationOptions;
@@ -72,16 +75,14 @@ public abstract class CohostEndpointTestBase(ITestOutputHelper testOutputHelper)
 
         _clientInitializationOptions = new()
         {
-            CSharpVirtualDocumentSuffix = CSharpVirtualDocumentSuffix,
             HtmlVirtualDocumentSuffix = ".g.html",
-            IncludeProjectKeyInGeneratedFilePath = false,
             UsePreciseSemanticTokenRanges = false,
             UseRazorCohostServer = true,
             ReturnCodeActionAndRenamePathsWithPrefixedSlash = false,
-            ForceRuntimeCodeGeneration = false,
             SupportsFileManipulation = true,
             ShowAllCSharpCodeActions = false,
-            UseRoslynTokenizer = false,
+            SupportsSoftSelectionInCompletion = true,
+            UseVsCodeCompletionTriggerCharacters = false,
         };
         UpdateClientInitializationOptions(c => c);
 
@@ -134,7 +135,7 @@ public abstract class CohostEndpointTestBase(ITestOutputHelper testOutputHelper)
     private protected virtual TestComposition ConfigureRoslynDevenvComposition(TestComposition composition)
         => composition;
 
-    protected Task<TextDocument> CreateProjectAndRazorDocumentAsync(
+    protected TextDocument CreateProjectAndRazorDocument(
         string contents,
         string? fileKind = null,
         (string fileName, string contents)[]? additionalFiles = null,
@@ -163,7 +164,7 @@ public abstract class CohostEndpointTestBase(ITestOutputHelper testOutputHelper)
             // actual solution syncing set up for testing, and don't really use a service broker, but since we also would
             // expect to never make changes to a workspace, it should be fine to simply create duplicated solutions as part
             // of test setup.
-            return CreateLocalProjectAndRazorDocumentAsync(
+            return CreateLocalProjectAndRazorDocument(
                 remoteDocument.Project.Solution,
                 projectId,
                 projectName,
@@ -177,10 +178,10 @@ public abstract class CohostEndpointTestBase(ITestOutputHelper testOutputHelper)
         // If we're just creating one workspace, then its the remote one and we just return the remote document
         // and assume that the endpoint under test doesn't need to do anything on the devenv side. This makes it
         // easier for tests to mutate solutions
-        return Task.FromResult(remoteDocument);
+        return remoteDocument;
     }
 
-    private async Task<TextDocument> CreateLocalProjectAndRazorDocumentAsync(
+    private TextDocument CreateLocalProjectAndRazorDocument(
         Solution remoteSolution,
         ProjectId projectId,
         string projectName,
@@ -197,19 +198,6 @@ public abstract class CohostEndpointTestBase(ITestOutputHelper testOutputHelper)
 
         var razorDocument = CreateProjectAndRazorDocument(workspace, projectId, projectName, documentId, documentFilePath, contents, additionalFiles, inGlobalNamespace);
 
-        // Until the source generator is hooked up, the workspace representing "local" projects doesn't have anything
-        // to actually compile the Razor to C#, so we just do it now at creation
-        var solution = razorDocument.Project.Solution;
-        // We're cheating a bit here and using the remote export provider to get something to do the compilation
-        var snapshotManager = _exportProvider.AssumeNotNull().GetExportedValue<RemoteSnapshotManager>();
-        var snapshot = snapshotManager.GetSnapshot(razorDocument);
-        // Compile the Razor file
-        var codeDocument = await snapshot.GetGeneratedOutputAsync(forceDesignTimeGeneratedOutput: false, DisposalToken);
-        // Update the generated doc contents
-        var generatedDocumentIds = solution.GetDocumentIdsWithFilePath(documentFilePath + CSharpVirtualDocumentSuffix);
-        solution = solution.WithDocumentText(generatedDocumentIds, codeDocument.GetCSharpSourceText());
-        razorDocument = solution.GetAdditionalDocument(documentId).AssumeNotNull();
-
         // If we're creating remote and local workspaces, then we'll return the local document, and have to allow
         // the remote service invoker to map from the local solution to the remote one.
         RemoteServiceInvoker.MapSolutionIdToRemote(razorDocument.Project.Solution.Id, remoteSolution);
@@ -217,8 +205,10 @@ public abstract class CohostEndpointTestBase(ITestOutputHelper testOutputHelper)
         return razorDocument;
     }
 
-    private static TextDocument CreateProjectAndRazorDocument(CodeAnalysis.Workspace workspace, ProjectId projectId, string projectName, DocumentId documentId, string documentFilePath, string contents, (string fileName, string contents)[]? additionalFiles, bool inGlobalNamespace)
+    private TextDocument CreateProjectAndRazorDocument(CodeAnalysis.Workspace workspace, ProjectId projectId, string projectName, DocumentId documentId, string documentFilePath, string contents, (string fileName, string contents)[]? additionalFiles, bool inGlobalNamespace)
     {
+        var sgAssembly = typeof(RazorSourceGenerator).Assembly;
+
         var projectInfo = ProjectInfo
             .Create(
                 projectId,
@@ -228,7 +218,10 @@ public abstract class CohostEndpointTestBase(ITestOutputHelper testOutputHelper)
                 LanguageNames.CSharp,
                 documentFilePath,
                 compilationOptions: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
-            .WithMetadataReferences(AspNet80.ReferenceInfos.All.Select(r => r.Reference));
+            .WithMetadataReferences(AspNet80.ReferenceInfos.All.Select(r => r.Reference))
+            .WithDefaultNamespace(TestProjectData.SomeProject.RootNamespace)
+            // TODO: Can we just use an object reference? Trying to do so now results in a serialization error from Roslyn
+            .WithAnalyzerReferences([new AnalyzerFileReference(sgAssembly.Location, TestAnalyzerAssemblyLoader.LoadFromFile)]);
 
         if (!inGlobalNamespace)
         {
@@ -243,11 +236,6 @@ public abstract class CohostEndpointTestBase(ITestOutputHelper testOutputHelper)
                 documentFilePath,
                 SourceText.From(contents),
                 filePath: documentFilePath)
-            .AddDocument(
-                DocumentId.CreateNewId(projectId),
-                name: documentFilePath + CSharpVirtualDocumentSuffix,
-                SourceText.From(""),
-                filePath: documentFilePath + CSharpVirtualDocumentSuffix)
             .AddAdditionalDocument(
                 DocumentId.CreateNewId(projectId),
                 name: TestProjectData.SomeProjectComponentImportFile1.FilePath,
@@ -276,6 +264,37 @@ public abstract class CohostEndpointTestBase(ITestOutputHelper testOutputHelper)
                     : solution.AddAdditionalDocument(DocumentId.CreateNewId(projectId), name: file.fileName, text: SourceText.From(file.contents), filePath: file.fileName);
             }
         }
+
+        var globalConfigContent = new StringBuilder();
+        globalConfigContent.AppendLine($"""
+                    is_global = true
+
+                    build_property.RazorLangVersion = {FallbackRazorConfiguration.Latest.LanguageVersion}
+                    build_property.RazorConfiguration = {FallbackRazorConfiguration.Latest.ConfigurationName}
+                    build_property.RootNamespace = {TestProjectData.SomeProject.RootNamespace}
+                    """);
+
+        var projectBasePath = TestProjectData.SomeProjectPath;
+        // Normally MS Build targets do this for us, but we're on our own!
+        foreach (var razorDocument in solution.Projects.Single().AdditionalDocuments)
+        {
+            if (razorDocument.FilePath is not null &&
+                razorDocument.FilePath.StartsWith(projectBasePath))
+            {
+                var relativePath = razorDocument.FilePath[(projectBasePath.Length + 1)..];
+                globalConfigContent.AppendLine($"""
+
+                [{razorDocument.FilePath.AssumeNotNull().Replace('\\', '/')}]
+                build_metadata.AdditionalFiles.TargetPath = {Convert.ToBase64String(Encoding.UTF8.GetBytes(relativePath))}
+                """);
+            }
+        }
+
+        solution = solution.AddAnalyzerConfigDocument(
+                DocumentId.CreateNewId(projectId),
+                name: ".globalconfig",
+                text: SourceText.From(globalConfigContent.ToString()),
+                filePath: Path.Combine(TestProjectData.SomeProjectPath, ".globalconfig"));
 
         return solution.GetAdditionalDocument(documentId).AssumeNotNull();
     }

@@ -47,13 +47,17 @@ public abstract class FormattingTestBase : CohostEndpointTestBase
     {
         (input, expected) = ProcessFormattingContext(input, expected);
 
-        var document = await CreateProjectAndRazorDocumentAsync(input.Text, fileKind, inGlobalNamespace: inGlobalNamespace);
+        var document = CreateProjectAndRazorDocument(input.Text, fileKind, inGlobalNamespace: inGlobalNamespace);
         if (!allowDiagnostics)
         {
-            // TODO: This doesn't work, but should when the source generator is hooked up
-            var compilation = await document.Project.GetCompilationAsync(DisposalToken);
-            var diagnostics = compilation.AssumeNotNull().GetDiagnostics(DisposalToken);
-            Assert.False(diagnostics.Any(), "Error creating document:" + Environment.NewLine + string.Join(Environment.NewLine, diagnostics));
+            //TODO: Tests in LanguageServer have extra components that are not present in this project, like Counter, etc.
+            //      so we can't validate for diagnostics here until we make them the same. Since the test inputs are all
+            //      shared this doesn't really matter while the language server tests are present.
+            //var snapshotManager = OOPExportProvider.GetExportedValue<RemoteSnapshotManager>();
+            //var snapshot = snapshotManager.GetSnapshot(document);
+            //var codeDocument = await snapshot.GetGeneratedOutputAsync(DisposalToken);
+            //var csharpDocument = codeDocument.GetCSharpDocument();
+            //Assert.False(csharpDocument.Diagnostics.Any(), "Error creating document:" + Environment.NewLine + string.Join(Environment.NewLine, csharpDocument.Diagnostics));
         }
 
         var htmlDocumentPublisher = new HtmlDocumentPublisher(RemoteServiceInvoker, StrictMock.Of<TrackingLSPDocumentManager>(), JoinableTaskContext, LoggerFactory);
@@ -61,7 +65,7 @@ public abstract class FormattingTestBase : CohostEndpointTestBase
         Assert.NotNull(generatedHtml);
 
         var uri = new Uri(document.CreateUri(), $"{document.FilePath}{FeatureOptions.HtmlVirtualDocumentSuffix}");
-        var htmlEdits = await _htmlFormattingService.GetDocumentFormattingEditsAsync(LoggerFactory, uri, generatedHtml, insertSpaces: true, tabSize: 4);
+        var htmlEdits = await _htmlFormattingService.GetDocumentFormattingEditsAsync(LoggerFactory, uri, generatedHtml, insertSpaces, tabSize);
 
         var requestInvoker = new TestLSPRequestInvoker([(Methods.TextDocumentFormattingName, htmlEdits)]);
 
@@ -98,7 +102,7 @@ public abstract class FormattingTestBase : CohostEndpointTestBase
     {
         (input, expected) = ProcessFormattingContext(input, expected);
 
-        var document = await CreateProjectAndRazorDocumentAsync(input.Text, fileKind: fileKind, inGlobalNamespace: inGlobalNamespace);
+        var document = CreateProjectAndRazorDocument(input.Text, fileKind: fileKind, inGlobalNamespace: inGlobalNamespace);
         var inputText = await document.GetTextAsync(DisposalToken);
         var position = inputText.GetPosition(input.Position);
 
@@ -152,8 +156,6 @@ public abstract class FormattingTestBase : CohostEndpointTestBase
     private (TestCode, string) ProcessFormattingContext(TestCode input, string expected)
     {
         Assert.True(_context.CreatedByFormattingDiscoverer, "Test class is using FormattingTestContext, but not using [FormattingTestFact] or [FormattingTestTheory]");
-
-        UpdateClientInitializationOptions(opt => opt with { ForceRuntimeCodeGeneration = _context.ForceRuntimeCodeGeneration });
 
         if (_context.ShouldFlipLineEndings)
         {

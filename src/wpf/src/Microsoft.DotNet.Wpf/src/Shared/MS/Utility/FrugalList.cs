@@ -11,8 +11,8 @@ using System.Xaml;
 using MS.Internal.WindowsBase;
 #endif
 
-//using MS.Internal.PresentationCore;
-//using SR=MS.Internal.WindowsBase.SR;
+// using MS.Internal.PresentationCore;
+// using SR=MS.Internal.WindowsBase.SR;
 
 // These classes implement a frugal storage model for lists of type <T>.
 // Performance measurements show that Avalon has many lists that contain
@@ -67,7 +67,7 @@ namespace MS.Utility
         Array
     }
 
-    abstract class FrugalListBase<T>
+    internal abstract class FrugalListBase<T>
     {
         /// <summary>
         /// Number of entries in this store
@@ -1613,9 +1613,9 @@ namespace MS.Utility
                 return _targetStore;
             }
 
-            ArrayItemList<T> _targetStore;
-            T[] _sourceArray;
-            T[] _targetArray;
+            private ArrayItemList<T> _targetStore;
+            private T[] _sourceArray;
+            private T[] _targetArray;
         }
 
         #endregion Compacter
@@ -1796,10 +1796,7 @@ namespace MS.Utility
 
         public void Clear()
         {
-            if (_listStore is not null)
-            {
-                _listStore.Clear();
-            }
+            _listStore?.Clear();
         }
 
         public bool Contains(T value)
@@ -1939,7 +1936,7 @@ namespace MS.Utility
                 _list = list;
 
                 FrugalListBase<T> store = _list._listStore;
-                _storeCompacter = (store is not null) ? store.NewCompacter(newCount) : null;
+                _storeCompacter = store?.NewCompacter(newCount);
             }
 
             public void Include(int start, int end)
@@ -1955,8 +1952,8 @@ namespace MS.Utility
                 }
             }
 
-            FrugalObjectList<T> _list;
-            FrugalListBase<T>.Compacter _storeCompacter;
+            private FrugalObjectList<T> _list;
+            private FrugalListBase<T>.Compacter _storeCompacter;
         }
         #endregion Compacter
     }
@@ -2179,10 +2176,7 @@ namespace MS.Utility
 
         public void Clear()
         {
-            if (_listStore is not null)
-            {
-                _listStore.Clear();
-            }
+            _listStore?.Clear();
         }
 
         public bool Contains(T value)
@@ -2289,7 +2283,7 @@ namespace MS.Utility
 
         public FrugalStructList<T> Clone()
         {
-            FrugalStructList<T> myClone = new FrugalStructList<T>();
+            FrugalStructList<T> myClone = default(FrugalStructList<T>);
 
             if (_listStore is not null)
             {

@@ -5,7 +5,7 @@
 
     From Versions.props:
 
-    $(MicrosoftDotnetSdkVersion) - .NET SDK to use for testing
+    $(MicrosoftNetSdkVersion) - .NET SDK to use for testing
     $(InternalReleaseTesting) - if true, internal service release testing
     $(PrivateBuildTesting) - if true, test against a locally built runtime
     @(RuntimeTestVersions) - runtime/aspnetcore versions to install and test against
@@ -20,6 +20,7 @@
   <PropertyGroup>
     <BuildArch Condition="'$(BuildArch)' == ''">$(Platform)</BuildArch>
     <BuildArch Condition="'$(BuildArch)' == 'AnyCpu'">$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant)</BuildArch>
+    <LiveRuntimeDir Condition="'$(LiveRuntimeDir)' != ''">$([MSBuild]::NormalizePath('$(LiveRuntimeDir)'))</LiveRuntimeDir>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildArch)' != 'x86'">
@@ -57,7 +58,7 @@
 -->
 
   <Target Name="InstallTestRuntimes"
-          DependsOnTargets="CleanupVersionManifest;InstallRuntimesWindows;InstallRuntimesUnix;WriteTestVersionManifest;" />
+          DependsOnTargets="CleanupVersionManifest;InstallRuntimesWindows;InstallRuntimesUnix;OverrideLatestRuntime;WriteTestVersionManifest" />
 
 <!--
     Installs the test runtimes on Windows
@@ -67,7 +68,7 @@
           Condition="$([MSBuild]::IsOsPlatform(Windows))"
           Inputs="$(VersionsPropsPath)" Outputs="$(TestConfigFileName)">
 
-    <Exec Command="$(PowershellWrapper) &quot;&amp; { &amp;$(DotnetInstallScriptCmd) $(CommonInstallArgs) -Version $(MicrosoftDotnetSdkVersion) }&quot;"
+    <Exec Command="$(PowershellWrapper) &quot;&amp; { &amp;$(DotnetInstallScriptCmd) $(CommonInstallArgs) -Version $(MicrosoftNetSdkVersion) }&quot;"
           IgnoreStandardErrorWarningFormat="true" />
 
     <Exec Command="$(PowershellWrapper) &quot;&amp; { &amp;$(DotnetInstallScriptCmd) $(CommonInstallArgs) %(RuntimeTestVersions.ExtraInstallArgs) -Version %(RuntimeTestVersions.RuntimeDownload) -Runtime dotnet }&quot;"
@@ -85,7 +86,7 @@
           Condition="!$([MSBuild]::IsOsPlatform(Windows))"
           Inputs="$(VersionsPropsPath)" Outputs="$(TestConfigFileName)">
 
-    <Exec Command="bash $(DotnetInstallScriptCmd) $(CommonInstallArgs) -Version $(MicrosoftDotnetSdkVersion)"
+    <Exec Command="bash $(DotnetInstallScriptCmd) $(CommonInstallArgs) -Version $(MicrosoftNetSdkVersion)"
           IgnoreStandardErrorWarningFormat="true" />
 
     <Exec Command="bash $(DotnetInstallScriptCmd) $(CommonInstallArgs) %(RuntimeTestVersions.ExtraInstallArgs) -Version %(RuntimeTestVersions.RuntimeDownload) -Runtime dotnet"
@@ -95,7 +96,21 @@
     <Exec Command="bash $(DotnetInstallScriptCmd) $(CommonInstallArgs) %(RuntimeTestVersions.ExtraInstallArgs) -Version %(RuntimeTestVersions.AspNetDownload) -Runtime aspnetcore"
           IgnoreStandardErrorWarningFormat="true"
           Condition="'%(RuntimeTestVersions.AspNetDownload)' != ''" />
-   </Target>
+  </Target>
+
+  <!-- Overrides the latest runtime shared framework with local shared framework artifacts -->
+  <Target Name="OverrideLatestRuntime"
+          Condition="'$(LiveRuntimeDir)' != ''"
+          Inputs="$(VersionsPropsPath)"
+          Outputs="$(TestConfigFileName)">
+    
+    <ItemGroup>
+      <_LiveRuntimeFiles Include="$(LiveRuntimeDir)\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_LiveRuntimeFiles)"
+          DestinationFolder="$(DotNetInstallDir)"
+          OverwriteReadOnlyFiles="true" />
+  </Target>
 
 <!--
     Writes the Debugger.Tests.Versions.txt file used by the SOS test harness
@@ -120,6 +135,7 @@
 <![CDATA[
   <RuntimeVersion%(RuntimeTestVersions.Identity)>%(RuntimeTestVersions.Runtime)</RuntimeVersion%(RuntimeTestVersions.Identity)>
   <AspNetCoreVersion%(RuntimeTestVersions.Identity)>%(RuntimeTestVersions.AspNet)</AspNetCoreVersion%(RuntimeTestVersions.Identity)>
+  <TargetFramework%(RuntimeTestVersions.Identity)>%(RuntimeTestVersions.TargetFramework)</TargetFramework%(RuntimeTestVersions.Identity)>
 ]]>
         </ConfigFileEntry>
       </TestConfigFileLines>

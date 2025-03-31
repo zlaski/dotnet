@@ -976,7 +976,7 @@ public class OnTypeFormattingTest(FormattingTestContext context, HtmlFormattingF
             input: """
                     <div>
                         @{
-                          if(true) { }
+                            if(true) { }
                         }
                     </div>
 
@@ -1123,5 +1123,44 @@ public class OnTypeFormattingTest(FormattingTestContext context, HtmlFormattingF
             }
             """,
             triggerCharacter: '}');
+    }
+
+    [FormattingTestFact(SkipFlipLineEnding = true)]
+    [WorkItem("https://github.com/dotnet/razor/issues/11117")]
+    public async Task SemiColon_DoesntBreakHtmlAttributes()
+    {
+        await RunOnTypeFormattingTestAsync(
+            input: """
+                    <PageTitle>AI!</PageTitle>
+
+                    <div>
+                        <div class="asdf"
+                             style="text-color: black"
+                             accesskey="GF">
+                            Hello there
+                        </div>
+                    </div>
+
+                    @code {
+                     public class Foo{}$$
+                    }
+                    """,
+            expected: """
+                    <PageTitle>AI!</PageTitle>
+                    
+                    <div>
+                        <div class="asdf"
+                             style="text-color: black"
+                             accesskey="GF">
+                            Hello there
+                        </div>
+                    </div>
+
+                    @code {
+                        public class Foo { }
+                    }
+                    """,
+            triggerCharacter: '}',
+            expectedChangedLines: 1);
     }
 }

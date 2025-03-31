@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -738,7 +737,7 @@ public class Class2 { static void Main(string [] args) { } }$$", HangMitigatingC
         var selectedSpan = spans["selection"].Single();
         await TestServices.Editor.SetSelectionAsync(selectedSpan, HangMitigatingCancellationToken);
         await TestServices.Input.SendWithoutActivateAsync(
-            new InputKey(VirtualKeyCode.BACK, ImmutableArray<VirtualKeyCode>.Empty), HangMitigatingCancellationToken);
+            new InputKey(VirtualKeyCode.BACK, []), HangMitigatingCancellationToken);
         await TestServices.Input.SendWithoutActivateAsync(["Other", "Stuff"], HangMitigatingCancellationToken);
         await TestServices.EditorVerifier.TextEqualsAsync(
             """

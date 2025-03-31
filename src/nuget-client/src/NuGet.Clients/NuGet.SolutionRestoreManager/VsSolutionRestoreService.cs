@@ -251,9 +251,6 @@ namespace NuGet.SolutionRestoreManager
 
             try
             {
-                _logger.LogInformation(
-                    $"The nominate API is called for '{projectUniqueName}'.");
-
                 ProjectNames projectNames = await GetProjectNamesAsync(projectUniqueName, token);
 
                 DependencyGraphSpec dgSpec;
@@ -392,7 +389,7 @@ namespace NuGet.SolutionRestoreManager
                     UseLegacyDependencyResolver = VSNominationUtilities.GetUseLegacyDependencyResolver(targetFrameworks),
                 },
                 RuntimeGraph = VSNominationUtilities.GetRuntimeGraph(targetFrameworks),
-                RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true },
+                RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true, SdkVersion = VSNominationUtilities.GetSdkVersion(targetFrameworks) },
             };
 
             return packageSpec;

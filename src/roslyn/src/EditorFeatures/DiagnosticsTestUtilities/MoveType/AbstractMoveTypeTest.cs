@@ -15,7 +15,6 @@ using Microsoft.CodeAnalysis.CodeRefactorings.MoveType;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Editor.UnitTests.CodeActions;
 using Microsoft.CodeAnalysis.Test.Utilities;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.UnitTests;
 using Roslyn.Test.Utilities;
 using Xunit;
@@ -132,10 +131,10 @@ public abstract class AbstractMoveTypeTest : AbstractCodeActionTest
         return await TestOperationsAsync(workspace,
             expectedText: expectedCode,
             operations: operations,
-            conflictSpans: ImmutableArray<TextSpan>.Empty,
-            renameSpans: ImmutableArray<TextSpan>.Empty,
-            warningSpans: ImmutableArray<TextSpan>.Empty,
-            navigationSpans: ImmutableArray<TextSpan>.Empty,
+            conflictSpans: [],
+            renameSpans: [],
+            warningSpans: [],
+            navigationSpans: [],
             expectedChangedDocumentId: null);
     }
 

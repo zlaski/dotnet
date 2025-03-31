@@ -40,12 +40,7 @@ internal class PromoteUsingCodeActionResolver(IFileSystem fileSystem) : IRazorCo
         var file = FilePathNormalizer.Normalize(documentContext.Uri.GetAbsoluteOrUNCPath());
         var folder = Path.GetDirectoryName(file).AssumeNotNull();
         var importsFile = Path.GetFullPath(Path.Combine(folder, "..", importsFileName));
-        var importFileUri = new UriBuilder
-        {
-            Scheme = Uri.UriSchemeFile,
-            Path = importsFile,
-            Host = string.Empty,
-        }.Uri;
+        var importFileUri = VsLspFactory.CreateFilePathUri(importsFile);
 
         using var edits = new PooledArrayBuilder<SumType<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>>();
 
@@ -57,6 +52,7 @@ internal class PromoteUsingCodeActionResolver(IFileSystem fileSystem) : IRazorCo
         }
         else
         {
+            // TODO: Update IFileSystem.ReadFile(...) to return a SourceText without reading a huge string.
             var st = SourceText.From(_fileSystem.ReadFile(importsFile));
             var lastLine = st.Lines[^1];
             insertLocation = new LinePosition(lastLine.LineNumber, 0);

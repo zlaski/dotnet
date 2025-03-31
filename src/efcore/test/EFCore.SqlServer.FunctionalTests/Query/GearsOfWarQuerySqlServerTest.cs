@@ -4212,6 +4212,21 @@ ORDER BY [t].[Id], [g].[Nickname], [g].[SquadId]
 """);
     }
 
+    public override async Task Correlated_collections_on_RightJoin_with_predicate(bool async)
+    {
+        await base.Correlated_collections_on_RightJoin_with_predicate(async);
+
+        AssertSql(
+            """
+SELECT [g].[Nickname], [g].[SquadId], [t].[Id], [w].[Name], [w].[Id]
+FROM [Gears] AS [g]
+RIGHT JOIN [Tags] AS [t] ON [g].[Nickname] = [t].[GearNickName]
+LEFT JOIN [Weapons] AS [w] ON [g].[FullName] = [w].[OwnerFullName]
+WHERE [g].[HasSoulPatch] = CAST(0 AS bit)
+ORDER BY [g].[Nickname], [g].[SquadId], [t].[Id]
+""");
+    }
+
     public override async Task Correlated_collections_on_left_join_with_null_value(bool async)
     {
         await base.Correlated_collections_on_left_join_with_null_value(async);
@@ -4452,7 +4467,7 @@ INNER JOIN (
     FROM [Factions] AS [f]
     WHERE [f].[Name] = N'Swarm'
 ) AS [f0] ON [l].[Name] = [f0].[CommanderName]
-WHERE [f0].[Eradicated] = CAST(0 AS bit) OR [f0].[Eradicated] IS NULL
+WHERE [f0].[Eradicated] <> CAST(1 AS bit) OR [f0].[Eradicated] IS NULL
 """);
     }
 
@@ -4469,7 +4484,7 @@ LEFT JOIN (
     FROM [Factions] AS [f]
     WHERE [f].[Name] = N'Swarm'
 ) AS [f0] ON [l].[Name] = [f0].[CommanderName]
-WHERE [f0].[Eradicated] = CAST(0 AS bit) OR [f0].[Eradicated] IS NULL
+WHERE [f0].[Eradicated] <> CAST(1 AS bit) OR [f0].[Eradicated] IS NULL
 """);
     }
 
@@ -6978,75 +6993,9 @@ FROM [LocustLeaders] AS [l]
 INNER JOIN [Factions] AS [f] ON [l].[Name] = [f].[CommanderName]
 WHERE CASE
     WHEN [f].[Name] = N'Locust' THEN CAST(1 AS bit)
-END = CAST(0 AS bit) OR CASE
+END <> CAST(1 AS bit) OR CASE
     WHEN [f].[Name] = N'Locust' THEN CAST(1 AS bit)
 END IS NULL
-""");
-    }
-
-    public override async Task Byte_array_contains_literal(bool async)
-    {
-        await base.Byte_array_contains_literal(async);
-
-        AssertSql(
-            """
-SELECT [s].[Id], [s].[Banner], [s].[Banner5], [s].[InternalNumber], [s].[Name]
-FROM [Squads] AS [s]
-WHERE CHARINDEX(0x01, [s].[Banner]) > 0
-""");
-    }
-
-    public override async Task Byte_array_filter_by_length_literal(bool async)
-    {
-        await base.Byte_array_filter_by_length_literal(async);
-
-        AssertSql(
-            """
-SELECT [s].[Id], [s].[Banner], [s].[Banner5], [s].[InternalNumber], [s].[Name]
-FROM [Squads] AS [s]
-WHERE CAST(DATALENGTH([s].[Banner]) AS int) = 2
-""");
-    }
-
-    public override async Task Byte_array_filter_by_length_parameter(bool async)
-    {
-        await base.Byte_array_filter_by_length_parameter(async);
-
-        AssertSql(
-            """
-@p='2'
-
-SELECT [s].[Id], [s].[Banner], [s].[Banner5], [s].[InternalNumber], [s].[Name]
-FROM [Squads] AS [s]
-WHERE CAST(DATALENGTH([s].[Banner]) AS int) = @p
-""");
-    }
-
-    public override void Byte_array_filter_by_length_parameter_compiled()
-    {
-        base.Byte_array_filter_by_length_parameter_compiled();
-
-        AssertSql(
-            """
-@byteArrayParam='0x2A80' (Size = 8000)
-
-SELECT COUNT(*)
-FROM [Squads] AS [s]
-WHERE CAST(DATALENGTH([s].[Banner]) AS int) = CAST(DATALENGTH(@byteArrayParam) AS int)
-""");
-    }
-
-    public override async Task Byte_array_contains_parameter(bool async)
-    {
-        await base.Byte_array_contains_parameter(async);
-
-        AssertSql(
-            """
-@someByte='1' (Size = 1)
-
-SELECT [s].[Id], [s].[Banner], [s].[Banner5], [s].[InternalNumber], [s].[Name]
-FROM [Squads] AS [s]
-WHERE CHARINDEX(CAST(@someByte AS varbinary(max)), [s].[Banner]) > 0
 """);
     }
 
@@ -7157,20 +7106,6 @@ FROM [Gears] AS [g]
             """
 SELECT CAST(0 AS bit)
 FROM [Gears] AS [g]
-""");
-    }
-
-    public override async Task Byte_array_filter_by_SequenceEqual(bool isAsync)
-    {
-        await base.Byte_array_filter_by_SequenceEqual(isAsync);
-
-        AssertSql(
-            """
-@byteArrayParam='0x0405060708' (Size = 5)
-
-SELECT [s].[Id], [s].[Banner], [s].[Banner5], [s].[InternalNumber], [s].[Name]
-FROM [Squads] AS [s]
-WHERE [s].[Banner5] = @byteArrayParam
 """);
     }
 
@@ -7288,19 +7223,6 @@ WHERE EXISTS (
     SELECT 1
     FROM [LocustLeaders] AS [l0]
     WHERE [l0].[ThreatLevelNullableByte] IS NULL)
-""");
-    }
-
-    public override async Task Contains_on_byte_array_property_using_byte_column(bool async)
-    {
-        await base.Contains_on_byte_array_property_using_byte_column(async);
-
-        AssertSql(
-            """
-SELECT [s].[Id], [s].[Banner], [s].[Banner5], [s].[InternalNumber], [s].[Name], [l].[Name], [l].[Discriminator], [l].[LocustHordeId], [l].[ThreatLevel], [l].[ThreatLevelByte], [l].[ThreatLevelNullableByte], [l].[DefeatedByNickname], [l].[DefeatedBySquadId], [l].[HighCommandId]
-FROM [Squads] AS [s]
-CROSS JOIN [LocustLeaders] AS [l]
-WHERE CHARINDEX(CAST([l].[ThreatLevelByte] AS varbinary(max)), [s].[Banner]) > 0
 """);
     }
 
@@ -7438,21 +7360,38 @@ ORDER BY [g].[Nickname]
 """);
     }
 
-    public override async Task Enum_array_contains(bool async)
+// TODO: The base implementations no longer compile since https://github.com/dotnet/runtime/pull/110197 (Contains overload added with
+// optional parameter, not supported in expression trees). #35547 is tracking on the EF side.
+//
+//     public override async Task Enum_array_contains(bool async)
+//     {
+//         await base.Enum_array_contains(async);
+//
+//         AssertSql(
+//             """
+// @types_without_nulls='[1]' (Size = 4000)
+//
+// SELECT [w].[Id], [w].[AmmunitionType], [w].[IsAutomatic], [w].[Name], [w].[OwnerFullName], [w].[SynergyWithId]
+// FROM [Weapons] AS [w]
+// LEFT JOIN [Weapons] AS [w0] ON [w].[SynergyWithId] = [w0].[Id]
+// WHERE [w0].[Id] IS NOT NULL AND ([w0].[AmmunitionType] IN (
+//     SELECT [t].[value]
+//     FROM OPENJSON(@types_without_nulls) AS [t]
+// ) OR [w0].[AmmunitionType] IS NULL)
+// """);
+//     }
+
+    public override async Task Coalesce_with_non_root_evaluatable_Convert(bool async)
     {
-        await base.Enum_array_contains(async);
+        await base.Coalesce_with_non_root_evaluatable_Convert(async);
 
         AssertSql(
             """
-@types_without_nulls='[1]' (Size = 4000)
+@rank='1' (Nullable = true)
 
-SELECT [w].[Id], [w].[AmmunitionType], [w].[IsAutomatic], [w].[Name], [w].[OwnerFullName], [w].[SynergyWithId]
-FROM [Weapons] AS [w]
-LEFT JOIN [Weapons] AS [w0] ON [w].[SynergyWithId] = [w0].[Id]
-WHERE [w0].[Id] IS NOT NULL AND ([w0].[AmmunitionType] IN (
-    SELECT [t].[value]
-    FROM OPENJSON(@types_without_nulls) AS [t]
-) OR [w0].[AmmunitionType] IS NULL)
+SELECT [g].[Nickname], [g].[SquadId], [g].[AssignedCityName], [g].[CityOfBirthName], [g].[Discriminator], [g].[FullName], [g].[HasSoulPatch], [g].[LeaderNickname], [g].[LeaderSquadId], [g].[Rank]
+FROM [Gears] AS [g]
+WHERE @rank = [g].[Rank]
 """);
     }
 

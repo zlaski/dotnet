@@ -12,7 +12,6 @@ using Microsoft.CodeAnalysis.Completion.Providers;
 using Microsoft.CodeAnalysis.LanguageService;
 using Microsoft.CodeAnalysis.Shared.Utilities;
 using Microsoft.CodeAnalysis.Text;
-using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.ExternalAccess.Pythia.Api;
 
@@ -43,7 +42,7 @@ internal abstract class PythiaCompletionProviderBase : CommonCompletionProvider,
         SupportedPlatformData? supportedPlatforms = null,
         ImmutableDictionary<string, string>? properties = null,
         ImmutableArray<string> tags = default)
-        => SymbolCompletionItem.CreateWithSymbolId(displayText, displayTextSuffix: null, symbols.ToImmutableArray(), rules, contextPosition, sortText, insertionText,
+        => SymbolCompletionItem.CreateWithSymbolId(displayText, displayTextSuffix: null, [.. symbols], rules, contextPosition, sortText, insertionText,
             filterText, displayTextPrefix: null, inlineDescription: null, glyph: null, supportedPlatforms, properties.AsImmutableOrNull(), tags);
 
     public static ImmutableArray<SymbolDisplayPart> CreateRecommendedKeywordDisplayParts(string keyword, string toolTip)

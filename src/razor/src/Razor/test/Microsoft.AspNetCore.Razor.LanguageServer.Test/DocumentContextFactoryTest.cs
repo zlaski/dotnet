@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test;
 
 public class DocumentContextFactoryTest : LanguageServerTestBase
 {
-    private static readonly string s_baseDirectory = PathUtilities.CreateRootedPath("path", "to");
+    private static readonly string s_baseDirectory = TestPathUtilities.CreateRootedPath("path", "to");
 
     private readonly TestProjectSnapshotManager _projectManager;
 
@@ -65,7 +65,7 @@ public class DocumentContextFactoryTest : LanguageServerTestBase
 
         await _projectManager.UpdateAsync(updater =>
         {
-            updater.AddDocument(MiscFilesProject.Key, hostDocument, TestMocks.CreateTextLoader(filePath, ""));
+            updater.AddDocument(MiscFilesProject.Key, hostDocument, EmptyTextLoader.Instance);
         });
 
         var documentSnapshot = _projectManager
@@ -99,7 +99,7 @@ public class DocumentContextFactoryTest : LanguageServerTestBase
         await _projectManager.UpdateAsync(updater =>
         {
             updater.AddProject(hostProject);
-            updater.AddDocument(hostProject.Key, hostDocument, new EmptyTextLoader(filePath));
+            updater.AddDocument(hostProject.Key, hostDocument, EmptyTextLoader.Instance);
         });
 
         // Act
@@ -120,7 +120,7 @@ public class DocumentContextFactoryTest : LanguageServerTestBase
 
         await _projectManager.UpdateAsync(updater =>
         {
-            updater.AddDocument(MiscFilesProject.Key, hostDocument, TestMocks.CreateTextLoader(filePath, ""));
+            updater.AddDocument(MiscFilesProject.Key, hostDocument, EmptyTextLoader.Instance);
         });
 
         var documentSnapshot = _projectManager

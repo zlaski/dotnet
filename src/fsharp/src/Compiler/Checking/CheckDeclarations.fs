@@ -2138,17 +2138,13 @@ module TyconConstraintInference =
                 
                 // Is the field type a type parameter?
                 match tryDestTyparTy g ty with
-                | ValueSome tp ->
-                    // Look for an explicit 'comparison' constraint
-                    if tp.Constraints |> List.exists (function TyparConstraint.SupportsComparison _ -> true | _ -> false) then 
-                        true
-                    
+                | ValueSome tp when tp |> HasConstraint _.IsSupportsComparison -> true
+                | ValueSome tp ->                    
                     // Within structural types, type parameters can be optimistically assumed to have comparison
                     // We record the ones for which we have made this assumption.
-                    elif tycon.TyparsNoRange |> List.exists (fun tp2 -> typarRefEq tp tp2) then 
+                    if tycon.TyparsNoRange |> List.exists (fun tp2 -> typarRefEq tp tp2) then 
                         assumedTyparsAcc <- assumedTyparsAcc.Add(tp.Stamp)
-                        true
-                    
+                        true                    
                     else
                         false
                 | _ ->
@@ -2267,14 +2263,11 @@ module TyconConstraintInference =
             // and type parameters.
             let rec checkIfFieldTypeSupportsEquality (tycon: Tycon) (ty: TType) =
                 match tryDestTyparTy g ty with
+                | ValueSome tp when tp |> HasConstraint _.IsSupportsEquality -> true
                 | ValueSome tp ->
-                    // Look for an explicit 'equality' constraint
-                    if tp.Constraints |> List.exists (function TyparConstraint.SupportsEquality _ -> true | _ -> false) then 
-                        true
-
                     // Within structural types, type parameters can be optimistically assumed to have equality
                     // We record the ones for which we have made this assumption.
-                    elif tycon.Typars(tycon.Range) |> List.exists (fun tp2 -> typarRefEq tp tp2) then                     
+                    if tycon.Typars(tycon.Range) |> List.exists (fun tp2 -> typarRefEq tp tp2) then                     
                         assumedTyparsAcc <- assumedTyparsAcc.Add(tp.Stamp)
                         true
                     else
@@ -3060,7 +3053,7 @@ module EstablishTypeDefinitionCores =
 
             if not isRootGenerated then 
                 let desig = theRootTypeWithRemapping.TypeProviderDesignation
-                let nm = theRootTypeWithRemapping.PUntaint((fun st -> st.FullName), m)
+                let nm = theRootTypeWithRemapping.PUntaint((fun st -> string st.FullName), m)
                 error(Error(FSComp.SR.etErasedTypeUsedInGeneration(desig, nm), m))
 
             cenv.createsGeneratedProvidedTypes <- true
@@ -3101,7 +3094,7 @@ module EstablishTypeDefinitionCores =
 
                 if not isGenerated then 
                     let desig = st.TypeProviderDesignation
-                    let nm = st.PUntaint((fun st -> st.FullName), m)
+                    let nm = st.PUntaint((fun st -> string st.FullName), m)
                     error(Error(FSComp.SR.etErasedTypeUsedInGeneration(desig, nm), m))
 
                 // Embed the type into the module we're compiling
@@ -3222,34 +3215,47 @@ module EstablishTypeDefinitionCores =
                   ignore inSig 
 #endif
 
-                  // This case deals with ordinary type and measure abbreviations 
-                  if not hasMeasureableAttr then 
+                  // This case deals with ordinary type and measure abbreviations
+                  if not hasMeasureableAttr then
                     let kind = if hasMeasureAttr then TyparKind.Measure else TyparKind.Type
                     let ty, _ = TcTypeOrMeasureAndRecover (Some kind) cenv NoNewTypars checkConstraints ItemOccurrence.UseInType WarnOnIWSAM.No envinner tpenv rhsType
 
-                    // Give a warning if `AutoOpenAttribute` is being aliased.
+
+                    // Give a warning if `AutoOpenAttribute` or `StructAttribute` is being aliased.
                     // If the user were to alias the `Microsoft.FSharp.Core.AutoOpenAttribute` type, it would not be detected by the project graph dependency resolution algorithm.
+
+                    let inline checkAttributeAliased ty (tycon: Tycon) (attrib: BuiltinAttribInfo) =
+                        match stripTyEqns g ty with
+                        | AppTy g (tcref, _) when not tcref.IsErased ->
+                            match tcref.CompiledRepresentation with
+                            | CompiledTypeRepr.ILAsmOpen _ -> ()
+                            | CompiledTypeRepr.ILAsmNamed _ ->
+                                if tcref.CompiledRepresentationForNamedType.FullName = attrib.TypeRef.FullName then
+                                    warning(Error(FSComp.SR.chkAttributeAliased(attrib.TypeRef.FullName), tycon.Id.idRange))
+                        | _ -> ()
+
+                    // Check for attributes in unit-of-measure declarations
+                    // [<Measure>] type x = 1<s>
+                    //                        ^
                     match stripTyEqns g ty with
-                    | AppTy g (tcref, _) when not tcref.IsErased ->
-                        match tcref.CompiledRepresentation with
-                        | CompiledTypeRepr.ILAsmOpen _ -> ()
-                        | CompiledTypeRepr.ILAsmNamed _ ->
-                            if tcref.CompiledRepresentationForNamedType.FullName = g.attrib_AutoOpenAttribute.TypeRef.FullName then
-                                warning(Error(FSComp.SR.chkAutoOpenAttributeInTypeAbbrev(), tycon.Id.idRange))
+                    | TType_measure tm -> CheckUnitOfMeasureAttributes g tm
                     | _ -> ()
-                    
-                    if not firstPass then 
-                        let ftyvs = freeInTypeLeftToRight g false ty 
+                        
+                    checkAttributeAliased ty tycon g.attrib_AutoOpenAttribute
+                    checkAttributeAliased ty tycon g.attrib_StructAttribute
+
+                    if not firstPass then
+                        let ftyvs = freeInTypeLeftToRight g false ty
                         let typars = tycon.Typars m
-                        if ftyvs.Length <> typars.Length then 
+                        if ftyvs.Length <> typars.Length then
                             errorR(Deprecated(FSComp.SR.tcTypeAbbreviationHasTypeParametersMissingOnType(), tycon.Range))
 
                     if firstPass then
                         tycon.SetTypeAbbrev (Some ty)
 
             | _ -> ()
-        
-        with RecoverableException exn -> 
+
+        with RecoverableException exn ->
             errorRecovery exn m
 
     // Third phase: check and publish the super types. Run twice, once before constraints are established
@@ -3691,7 +3697,20 @@ module EstablishTypeDefinitionCores =
                                   if curriedArgInfos.Length < 1 then error(Error(FSComp.SR.tcInvalidDelegateSpecification(), m))
                                   if curriedArgInfos.Length > 1 then error(Error(FSComp.SR.tcDelegatesCannotBeCurried(), m))
                                   let ttps = thisTyconRef.Typars m
-                                  let fparams = curriedArgInfos.Head |> List.map MakeSlotParam 
+                                  let fparams =
+                                      curriedArgInfos.Head
+                                      |> List.map (fun (ty, argInfo: ArgReprInfo) ->
+                                            let ty =
+                                              if HasFSharpAttribute g g.attrib_OptionalArgumentAttribute argInfo.Attribs then
+                                                  match TryFindFSharpAttribute g g.attrib_StructAttribute argInfo.Attribs with
+                                                  | Some (Attrib(range=m)) ->
+                                                      checkLanguageFeatureAndRecover g.langVersion LanguageFeature.SupportValueOptionsAsOptionalParameters m
+                                                      mkValueOptionTy g ty
+                                                  | _ ->
+                                                      mkOptionTy g ty            
+                                              else ty
+
+                                            MakeSlotParam(ty, argInfo)) 
                                   TFSharpDelegate (MakeSlotSig("Invoke", thisTy, ttps, [], [fparams], returnTy))
                               | _ -> 
                                   error(InternalError("should have inferred tycon kind", m))
@@ -3801,11 +3820,11 @@ module EstablishTypeDefinitionCores =
 
             and accInMeasure measureTy acc =
                 match stripUnitEqns measureTy with
-                | Measure.Const tcref when ListSet.contains (===) tcref.Deref tycons ->  
+                | Measure.Const(tyconRef= tcref) when ListSet.contains (===) tcref.Deref tycons ->  
                     (tycon, tcref.Deref) :: acc
-                | Measure.Const tcref when tcref.IsTypeAbbrev ->              
+                | Measure.Const(tyconRef= tcref) when tcref.IsTypeAbbrev ->              
                     accInMeasure (reduceTyconRefAbbrevMeasureable tcref) acc
-                | Measure.Prod (ms1, ms2) -> accInMeasure ms1 (accInMeasure ms2 acc)
+                | Measure.Prod(measure1= ms1; measure2= ms2) -> accInMeasure ms1 (accInMeasure ms2 acc)
                 | Measure.Inv invTy -> accInMeasure invTy acc
                 | _ -> acc
 
@@ -4238,7 +4257,7 @@ module TcDeclarations =
                 // For historical reasons we only give a warning for incorrect type parameters on intrinsic extensions
                 if nReqTypars <> synTypars.Length then 
                     errorR(Error(FSComp.SR.tcDeclaredTypeParametersForExtensionDoNotMatchOriginal(tcref.DisplayNameWithStaticParametersAndUnderscoreTypars), m))
-                if not (typarsAEquiv g TypeEquivEnv.Empty reqTypars declaredTypars) then 
+                if not (typarsAEquiv g (TypeEquivEnv.EmptyWithNullChecks g) reqTypars declaredTypars) then 
                     warning(Error(FSComp.SR.tcDeclaredTypeParametersForExtensionDoNotMatchOriginal(tcref.DisplayNameWithStaticParametersAndUnderscoreTypars), m))
                 // Note we return 'reqTypars' for intrinsic extensions since we may only have given warnings
                 IntrinsicExtensionBinding, reqTypars
@@ -4247,7 +4266,7 @@ module TcDeclarations =
                     errorR(Error(FSComp.SR.tcMembersThatExtendInterfaceMustBePlacedInSeparateModule(), tcref.Range))
                 if nReqTypars <> synTypars.Length then 
                     error(Error(FSComp.SR.tcDeclaredTypeParametersForExtensionDoNotMatchOriginal(tcref.DisplayNameWithStaticParametersAndUnderscoreTypars), m))
-                if not (typarsAEquiv g TypeEquivEnv.Empty reqTypars declaredTypars) then 
+                if not (typarsAEquiv g (TypeEquivEnv.EmptyWithNullChecks g) reqTypars declaredTypars) then 
                     errorR(Error(FSComp.SR.tcDeclaredTypeParametersForExtensionDoNotMatchOriginal(tcref.DisplayNameWithStaticParametersAndUnderscoreTypars), m))
                 ExtrinsicExtensionBinding, declaredTypars
 
@@ -5466,7 +5485,7 @@ let rec TcModuleOrNamespaceElementNonMutRec (cenv: cenv) parent typeNames scopem
 and [<TailCall>] TcModuleOrNamespaceElementsNonMutRec cenv parent typeNames endm (defsSoFar, env, envAtEnd) (moreDefs: SynModuleDecl list) (ct: CancellationToken) =
 
     if ct.IsCancellationRequested then
-        ValueOrCancelled.Cancelled (OperationCanceledException())
+        ValueOrCancelled.Cancelled(OperationCanceledException ct)
     else
         match moreDefs with
         | [] ->
@@ -5689,7 +5708,7 @@ let CheckModuleSignature g (cenv: cenv) m denvAtEnd rootSigOpt implFileTypePrior
                 |]
 
         // We want to show imperative type variables in any types in error messages at this late point 
-        let denv = { denvAtEnd with showInferenceTyparAnnotations=true }
+        let denv = { denvAtEnd with showInferenceTyparAnnotations=true;showNullnessAnnotations=Some g.checkNullness }
         try 
                 
             // As typechecked the signature and implementation use different tycons etc. 
@@ -5701,7 +5720,7 @@ let CheckModuleSignature g (cenv: cenv) m denvAtEnd rootSigOpt implFileTypePrior
             // Compute the remapping from implementation to signature
             let remapInfo, _ = ComputeRemappingFromInferredSignatureToExplicitSignature g implFileTypePriorToSig sigFileType
                      
-            let aenv = { TypeEquivEnv.Empty with EquivTycons = TyconRefMap.OfList remapInfo.RepackagedEntities }
+            let aenv = { TypeEquivEnv.EmptyWithNullChecks g with EquivTycons = TyconRefMap.OfList remapInfo.RepackagedEntities }
                     
             if not (SignatureConformance.Checker(g, cenv.amap, denv, remapInfo, true).CheckSignature aenv cenv.infoReader (mkLocalModuleRef implFileSpecPriorToSig) sigFileType) then
                 // We can just raise 'ReportedError' since CheckModuleOrNamespace raises its own error 

@@ -12,11 +12,9 @@ using Microsoft.AspNetCore.Razor;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.PooledObjects;
-using Microsoft.AspNetCore.Razor.ProjectEngineHost;
-using Microsoft.CodeAnalysis.Razor;
+using Microsoft.AspNetCore.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor.Logging;
-using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.CodeAnalysis.Razor.Settings;
+
 using Microsoft.Extensions.Internal;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Razor.Extensions;
@@ -223,7 +221,10 @@ internal class VisualStudioRazorParser : IVisualStudioRazorParser, IDisposable
 
         var projectSnapshot = _documentTracker.ProjectSnapshot.AssumeNotNull();
 
-        _projectEngine = _projectEngineFactoryProvider.Create(projectSnapshot, ConfigureProjectEngine).AssumeNotNull();
+        _projectEngine = _projectEngineFactoryProvider.Create(
+            projectSnapshot.Configuration,
+            rootDirectoryPath: Path.GetDirectoryName(projectSnapshot.FilePath).AssumeNotNull(),
+            ConfigureProjectEngine);
 
         Debug.Assert(_projectEngine.Engine is not null);
         Debug.Assert(_projectEngine.FileSystem is not null);
@@ -329,7 +330,11 @@ internal class VisualStudioRazorParser : IVisualStudioRazorParser, IDisposable
                 return;
             }
 
-            var codeDocument = RazorCodeDocument.Create(currentCodeDocument.Source, currentCodeDocument.Imports);
+            var codeDocument = RazorCodeDocument.Create(
+                currentCodeDocument.Source,
+                currentCodeDocument.Imports,
+                currentCodeDocument.ParserOptions,
+                currentCodeDocument.CodeGenerationOptions);
 
             foreach (var item in currentCodeDocument.Items)
             {
@@ -499,9 +504,19 @@ internal class VisualStudioRazorParser : IVisualStudioRazorParser, IDisposable
         }
 
         builder.SetRootNamespace(projectSnapshot?.RootNamespace);
-        builder.Features.Add(new VisualStudioParserOptionsFeature(_documentTracker.EditorSettings));
+
+        var settings = _documentTracker.EditorSettings;
+
+        builder.ConfigureCodeGenerationOptions(builder =>
+        {
+            builder.IndentSize = settings.IndentSize;
+            builder.IndentWithTabs = settings.IndentWithTabs;
+            builder.RemapLinePragmaPathsOnWindows = true;
+        });
+
         builder.Features.Add(new VisualStudioTagHelperFeature(_documentTracker.TagHelpers));
-        builder.Features.Add(new VisualStudioEnableTagHelpersFeature());
+
+        builder.ConfigureParserOptions(ConfigureParserOptions);
     }
 
     private void UpdateParserState(RazorCodeDocument codeDocument, ITextSnapshot snapshot)
@@ -571,26 +586,7 @@ internal class VisualStudioRazorParser : IVisualStudioRazorParser, IDisposable
         }
     }
 
-    private class VisualStudioParserOptionsFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
-    {
-        private readonly ClientSpaceSettings _settings;
-
-        public VisualStudioParserOptionsFeature(ClientSpaceSettings settings)
-        {
-            _settings = settings;
-        }
-
-        public int Order { get; set; }
-
-        public void Configure(RazorCodeGenerationOptionsBuilder options)
-        {
-            options.IndentSize = _settings.IndentSize;
-            options.IndentWithTabs = _settings.IndentWithTabs;
-            options.RemapLinePragmaPathsOnWindows = true;
-        }
-    }
-
-    private class VisualStudioTagHelperFeature : ITagHelperFeature
+    private class VisualStudioTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
     {
         private readonly IReadOnlyList<TagHelperDescriptor>? _tagHelpers;
 
@@ -599,8 +595,6 @@ internal class VisualStudioRazorParser : IVisualStudioRazorParser, IDisposable
             _tagHelpers = tagHelpers;
         }
 
-        public RazorEngine? Engine { get; set; }
-
         public IReadOnlyList<TagHelperDescriptor>? GetDescriptors()
         {
             return _tagHelpers;
@@ -608,15 +602,10 @@ internal class VisualStudioRazorParser : IVisualStudioRazorParser, IDisposable
     }
 
     // Internal for testing
-    internal class VisualStudioEnableTagHelpersFeature : RazorEngineFeatureBase, IConfigureRazorParserOptionsFeature
+    internal static void ConfigureParserOptions(RazorParserOptions.Builder builder)
     {
-        public int Order => 0;
-
-        public void Configure(RazorParserOptionsBuilder options)
-        {
-            options.EnableSpanEditHandlers = true;
-            options.UseRoslynTokenizer = false;
-        }
+        builder.EnableSpanEditHandlers = true;
+        builder.UseRoslynTokenizer = false;
     }
 
     // Internal for testing

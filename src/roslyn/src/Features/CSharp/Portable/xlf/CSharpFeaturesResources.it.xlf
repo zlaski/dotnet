@@ -132,11 +132,6 @@
         <target state="translated">La selezione automatica è disabilitata a causa di una potenziale dichiarazione della variabile di criterio.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Cannot_determine_valid_range_of_statements_to_extract">
-        <source>Cannot determine valid range of statements to extract</source>
-        <target state="translated">Non è possibile determinare l'intervallo valido di istruzioni da estrarre</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Change_to_as_expression">
         <source>Change to 'as' expression</source>
         <target state="translated">Cambia in espressione 'as'</target>
@@ -147,10 +142,20 @@
         <target state="translated">Cambia in cast</target>
         <note />
       </trans-unit>
+      <trans-unit id="Convert_0_extension_methods_to_extension">
+        <source>Convert '{0}' extension methods to extension</source>
+        <target state="new">Convert '{0}' extension methods to extension</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Convert_0_to_record">
         <source>Convert '{0}' to record</source>
         <target state="translated">Convertire '{0}' in record</target>
         <note>{Locked="record"} "record" is a C# keyword and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="Convert_all_extension_methods_in_0_to_extension">
+        <source>Convert all extension methods in '{0}' to extension</source>
+        <target state="new">Convert all extension methods in '{0}' to extension</target>
+        <note />
       </trans-unit>
       <trans-unit id="Convert_to_method">
         <source>Convert to method</source>
@@ -367,11 +372,6 @@
         <target state="translated">Il codice selezionato è all'interno di un contesto unsafe.</target>
         <note />
       </trans-unit>
-      <trans-unit id="No_valid_statement_range_to_extract">
-        <source>No valid statement range to extract</source>
-        <target state="translated">Non esiste alcun intervallo di istruzioni valido per l'estrazione</target>
-        <note />
-      </trans-unit>
       <trans-unit id="deprecated">
         <source>deprecated</source>
         <target state="translated">deprecato</target>
@@ -409,7 +409,7 @@
       </trans-unit>
       <trans-unit id="required_property">
         <source>required property</source>
-        <target state="new">required property</target>
+        <target state="translated">proprietà obbligatoria</target>
         <note />
       </trans-unit>
       <trans-unit id="reversed_for_loop">

@@ -10,14 +10,6 @@ open System.IO
 open System.Text
 open System.Diagnostics
 
-module MessageSink =
-    let sinkWriter =
-#if DEBUG
-        Console.Out
-#else
-        TextWriter.Null
-#endif
-
 [<AutoOpen>]
 module Scripting =
 
@@ -31,7 +23,7 @@ module Scripting =
         let info = ProcessStartInfo(Arguments=arguments, UseShellExecute=false, 
                                     RedirectStandardOutput=true, RedirectStandardError=true,
                                     CreateNoWindow=true, FileName=fileName)
-        let p = new Process(StartInfo=info)
+        use p = new Process(StartInfo=info)
         p.OutputDataReceived.Add(fun x -> processWriteMessage stdout x.Data)
         p.ErrorDataReceived.Add(fun x ->  processWriteMessage stderr x.Data)
         if p.Start() then
@@ -85,7 +77,7 @@ module Scripting =
         if Directory.Exists output then 
             Directory.Delete(output, true) 
 
-    let log format = fprintfn MessageSink.sinkWriter format
+    let log format = printfn format
 
     type FilePath = string
 
@@ -121,7 +113,7 @@ module Scripting =
 
             ignore envs  // work out what to do about this
 
-            let p = new Process()
+            use p = new Process()
             p.EnableRaisingEvents <- true
             p.StartInfo <- processInfo
             let out = StringBuilder()
@@ -163,11 +155,14 @@ module Scripting =
 
             p.WaitForExit() 
 
+            printf $"{string out}"
+            eprintf $"{string err}"
+
             match p.ExitCode with
             | 0 ->
                 Success(string out)
             | errCode ->
-                let msg = sprintf "Error running command '%s' with args '%s' in directory '%s'.\n---- stdout below --- \n%s\n---- stderr below --- \n%s " exePath arguments workDir (out.ToString()) (err.ToString())
+                let msg = sprintf "Error running command '%s' with args '%s' in directory '%s'" exePath arguments workDir
                 ErrorLevel (msg, errCode)
 
     type OutPipe (writer: TextWriter) =
@@ -176,8 +171,6 @@ module Scripting =
            member _.Dispose() = writer.Flush()
 
     let redirectTo (writer: TextWriter) = new OutPipe (writer)
-
-    let redirectToLog () = redirectTo System.Console.Out
 
 #if !NETCOREAPP
     let defaultPlatform = 
@@ -192,7 +185,7 @@ module Scripting =
         let info = ProcessStartInfo(Arguments=arguments, UseShellExecute=false, 
                                     RedirectStandardOutput=true, RedirectStandardError=true,RedirectStandardInput=true,
                                     CreateNoWindow=true, FileName=fileName)
-        let p = new Process(StartInfo=info)
+        use p = new Process(StartInfo=info)
         if p.Start() then
 
             async { try 

@@ -12,7 +12,7 @@ namespace MS.Internal.ComponentModel
     ///     could just inherit from the CustomTypeDescriptor class, which does most of the forwarding
     ///     work for us, but these are allocated a lot so we want them to be structs.
     /// </summary>
-    struct APCustomTypeDescriptor : ICustomTypeDescriptor {
+    internal struct APCustomTypeDescriptor : ICustomTypeDescriptor {
         //------------------------------------------------------
         //
         //  Constructors
@@ -73,8 +73,7 @@ namespace MS.Internal.ComponentModel
             {
                 foreach (Attribute attr in attributes) 
                 {
-                    PropertyFilterAttribute filterAttr = attr as PropertyFilterAttribute;
-                    if (filterAttr != null) 
+                    if (attr is PropertyFilterAttribute filterAttr)
                     {
                         filter = filterAttr.Filter;
                         break;

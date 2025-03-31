@@ -100,16 +100,18 @@ namespace MS.Internal.Xaml.Context
 
     internal class NameFixupToken : IAddLineInfo
     {
-        List<string> _names;
-        List<XAML3.INameScopeDictionary> _nameScopeDictionaryList;
+        private List<string> _names;
+        private List<XAML3.INameScopeDictionary> _nameScopeDictionaryList;
 
         public NameFixupToken()
         {
             _names = new List<string>();
             _nameScopeDictionaryList = new List<XAML3.INameScopeDictionary>();
-            Target = new FixupTarget();
-            Target.TemporaryCollectionIndex = -1;
-            Target.InstanceIsOnTheStack = true;
+            Target = new FixupTarget
+            {
+                TemporaryCollectionIndex = -1,
+                InstanceIsOnTheStack = true
+            };
         }
 
         public bool CanAssignDirectly { get; set; }
@@ -158,7 +160,7 @@ namespace MS.Internal.Xaml.Context
             get { return _nameScopeDictionaryList; }
         }
 
-        public List<String> NeededNames
+        public List<string> NeededNames
         {
             get { return _names; }
         }

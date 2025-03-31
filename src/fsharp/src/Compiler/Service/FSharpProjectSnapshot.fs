@@ -436,15 +436,18 @@ and [<Experimental("This FCS API is experimental and subject to change.")>] Proj
             ((projectFileName, outputFileNameValue.Value |> Option.defaultValue "")
              |> FSharpProjectIdentifier)
 
-    new(projectFileName: string,
-        outputFileName: string option,
-        referencesOnDisk: string seq,
-        otherOptions: string seq,
-        ?isIncompleteTypeCheckEnvironment: bool,
-        ?useScriptResolutionRules: bool,
-        ?loadTime: DateTime,
-        ?stamp: int64,
-        ?projectId: string) =
+    new
+        (
+            projectFileName: string,
+            outputFileName: string option,
+            referencesOnDisk: string seq,
+            otherOptions: string seq,
+            ?isIncompleteTypeCheckEnvironment: bool,
+            ?useScriptResolutionRules: bool,
+            ?loadTime: DateTime,
+            ?stamp: int64,
+            ?projectId: string
+        ) =
 
         let referencesOnDisk =
             referencesOnDisk
@@ -469,7 +472,7 @@ and [<Experimental("This FCS API is experimental and subject to change.")>] Proj
             projectId = projectId
         )
 
-    member val ProjectDirectory = !! Path.GetDirectoryName(projectFileName)
+    member val ProjectDirectory = !!Path.GetDirectoryName(projectFileName)
     member _.OutputFileName = outputFileNameValue.Value
     member _.Identifier = identifier.Value
     member _.Version = fullHash.Value
@@ -726,13 +729,8 @@ and [<Experimental("This FCS API is experimental and subject to change.")>] FSha
         )
 
     static member FromOptions
-        (
-            options: FSharpProjectOptions,
-            fileName: string,
-            fileVersion: int,
-            sourceText: ISourceText,
-            documentSource: DocumentSource
-        ) =
+        (options: FSharpProjectOptions, fileName: string, fileVersion: int, sourceText: ISourceText, documentSource: DocumentSource)
+        =
 
         let getFileSnapshot _ fName =
             if fName = fileName then
@@ -747,26 +745,35 @@ and [<Experimental("This FCS API is experimental and subject to change.")>] FSha
 
         FSharpProjectSnapshot.FromOptions(options, getFileSnapshot)
 
-let rec internal snapshotToOptions (projectSnapshot: ProjectSnapshotBase<_>) =
-    {
-        ProjectFileName = projectSnapshot.ProjectFileName
-        ProjectId = projectSnapshot.ProjectId
-        SourceFiles = projectSnapshot.SourceFiles |> Seq.map (fun x -> x.FileName) |> Seq.toArray
-        OtherOptions = projectSnapshot.CommandLineOptions |> List.toArray
-        ReferencedProjects =
-            projectSnapshot.ReferencedProjects
-            |> Seq.map (function
-                | FSharpReference(name, opts) -> FSharpReferencedProject.FSharpReference(name, opts.ProjectSnapshot |> snapshotToOptions)
-                | PEReference(getStamp, reader) -> FSharpReferencedProject.PEReference(getStamp, reader)
-                | ILModuleReference(name, getStamp, getReader) -> FSharpReferencedProject.ILModuleReference(name, getStamp, getReader))
-            |> Seq.toArray
-        IsIncompleteTypeCheckEnvironment = projectSnapshot.IsIncompleteTypeCheckEnvironment
-        UseScriptResolutionRules = projectSnapshot.UseScriptResolutionRules
-        LoadTime = projectSnapshot.LoadTime
-        UnresolvedReferences = projectSnapshot.UnresolvedReferences
-        OriginalLoadReferences = projectSnapshot.OriginalLoadReferences
-        Stamp = projectSnapshot.Stamp
-    }
+let internal snapshotTable =
+    ConditionalWeakTable<ProjectSnapshot, FSharpProjectOptions>()
+
+let rec internal snapshotToOptions (projectSnapshot: ProjectSnapshot) =
+    snapshotTable.GetValue(
+        projectSnapshot,
+        fun projectSnapshot ->
+            {
+                ProjectFileName = projectSnapshot.ProjectFileName
+                ProjectId = projectSnapshot.ProjectId
+                SourceFiles = projectSnapshot.SourceFiles |> Seq.map (fun x -> x.FileName) |> Seq.toArray
+                OtherOptions = projectSnapshot.CommandLineOptions |> List.toArray
+                ReferencedProjects =
+                    projectSnapshot.ReferencedProjects
+                    |> Seq.map (function
+                        | FSharpReference(name, opts) ->
+                            FSharpReferencedProject.FSharpReference(name, opts.ProjectSnapshot |> snapshotToOptions)
+                        | PEReference(getStamp, reader) -> FSharpReferencedProject.PEReference(getStamp, reader)
+                        | ILModuleReference(name, getStamp, getReader) ->
+                            FSharpReferencedProject.ILModuleReference(name, getStamp, getReader))
+                    |> Seq.toArray
+                IsIncompleteTypeCheckEnvironment = projectSnapshot.IsIncompleteTypeCheckEnvironment
+                UseScriptResolutionRules = projectSnapshot.UseScriptResolutionRules
+                LoadTime = projectSnapshot.LoadTime
+                UnresolvedReferences = projectSnapshot.UnresolvedReferences
+                OriginalLoadReferences = projectSnapshot.OriginalLoadReferences
+                Stamp = projectSnapshot.Stamp
+            }
+    )
 
 [<Extension>]
 type internal Extensions =

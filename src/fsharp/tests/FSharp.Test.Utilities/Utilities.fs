@@ -18,6 +18,7 @@ open System.Collections.Generic
 open FSharp.Compiler.CodeAnalysis
 open Newtonsoft.Json
 open Newtonsoft.Json.Linq
+open Xunit.Sdk
 
 
 type TheoryForNETCOREAPPAttribute() =
@@ -42,7 +43,7 @@ type FactForDESKTOPAttribute() =
 module Utilities =
 
     type Async with
-        static member RunImmediate (computation: Async<'T>, ?cancellationToken ) =
+        static member RunImmediate (computation: Async<'T>, ?cancellationToken) =
             let cancellationToken = defaultArg cancellationToken Async.DefaultCancellationToken
             let ts = TaskCompletionSource<'T>()
             let task = ts.Task
@@ -137,7 +138,7 @@ module Utilities =
     [<RequireQualifiedAccess>]
     module public TargetFrameworkUtil =
 
-        let private config = TestFramework.initializeSuite ()
+        let private config = initialConfig
 
         // Do a one time dotnet sdk build to compute the proper set of reference assemblies to pass to the compiler
         let private projectFile = """
@@ -215,8 +216,7 @@ let main argv = 0"""
                     File.WriteAllText(directoryBuildPropsFileName, directoryBuildProps)
                     File.WriteAllText(directoryBuildTargetsFileName, directoryBuildTargets)
 
-                    let timeout = 120000
-                    let exitCode, dotnetoutput, dotneterrors = Commands.executeProcess config.DotNetExe "build" projectDirectory timeout
+                    let exitCode, dotnetoutput, dotneterrors = Commands.executeProcess config.DotNetExe "build" projectDirectory
                     
                     if exitCode <> 0 || errors.Length > 0 then
                         errors <- dotneterrors
@@ -239,7 +239,7 @@ let main argv = 0"""
 Project directory: %s{projectDirectory}
 STDOUT: %s{output}
 STDERR: %s{errors}
-An error occurred getting netcoreapp references: %A{e}
+An error occurred getting netcoreapp references (compare the output of `dotnet --list-sdks` and/or the contents of the local `/.dotnet` directory against what is in `global.json`): %A{e}
 """
                     raise (Exception (message, e))
             finally

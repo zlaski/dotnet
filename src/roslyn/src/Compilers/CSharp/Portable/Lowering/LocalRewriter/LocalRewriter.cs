@@ -404,7 +404,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 if (_factory.CompilationState.Compilation.ShouldEmitNullableAttributes(localFunction))
                 {
                     bool constraintsNeedNullableAttribute = typeParameters.Any(
-                       static typeParameter => ((SourceTypeParameterSymbolBase)typeParameter).ConstraintsNeedNullableAttribute());
+                       static typeParameter => ((SourceTypeParameterSymbol)typeParameter).ConstraintsNeedNullableAttribute());
 
                     if (constraintsNeedNullableAttribute || hasReturnTypeOrParameter(localFunction, static t => t.NeedsNullableAttribute()))
                     {
@@ -412,7 +412,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     }
                 }
 
-                static bool hasReturnTypeOrParameter(LocalFunctionSymbol localFunction, Func<TypeWithAnnotations, bool> predicate) =>
+                static bool hasReturnTypeOrParameter(MethodSymbol localFunction, Func<TypeWithAnnotations, bool> predicate) =>
                     predicate(localFunction.ReturnTypeWithAnnotations) || localFunction.ParameterTypesWithAnnotations.Any(predicate);
             }
 

@@ -11,73 +11,65 @@ public class MiscellaneousTranslationsCosmosTest : MiscellaneousTranslationsTest
         Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
-    #region Guid
+    #region Random
 
-    public override Task Guid_new_with_constant(bool async)
+    public override Task Random_on_EF_Functions(bool async)
         => Fixture.NoSyncTest(
             async, async a =>
             {
-                await base.Guid_new_with_constant(a);
+                await base.Random_on_EF_Functions(a);
 
                 AssertSql(
                     """
-SELECT VALUE c
+SELECT VALUE COUNT(1)
 FROM root c
-WHERE (c["Guid"] = "df36f493-463f-4123-83f9-6b135deeb7ba")
+WHERE ((RAND() >= 0.0) AND (RAND() < 1.0))
 """);
             });
 
-    public override Task Guid_new_with_parameter(bool async)
-        => Fixture.NoSyncTest(
-            async, async a =>
-            {
-                await base.Guid_new_with_parameter(a);
-
-                AssertSql(
-                    """
-@p=?
-
-SELECT VALUE c
-FROM root c
-WHERE (c["Guid"] = @p)
-""");
-            });
-
-    public override Task Guid_ToString_projection(bool async)
-        => Fixture.NoSyncTest(
-            async, async a =>
-            {
-                await base.Guid_ToString_projection(a);
-
-                AssertSql(
-                    """
-SELECT VALUE c["Guid"]
-FROM root c
-""");
-            });
-
-    public override async Task Guid_NewGuid(bool async)
+    public override async Task Random_Shared_Next_with_no_args(bool async)
     {
-        // Cosmos client evaluation. Issue #17246.
-        await AssertTranslationFailed(() => base.Guid_NewGuid(async));
+        await AssertTranslationFailed(() => base.Random_Shared_Next_with_no_args(async));
 
         AssertSql();
     }
 
-    #endregion Guid
+    public override async Task Random_Shared_Next_with_one_arg(bool async)
+    {
+        await AssertTranslationFailed(() => base.Random_Shared_Next_with_one_arg(async));
 
-    #region Byte array
+        AssertSql();
+    }
 
-    public override Task Byte_array_Length(bool async)
-        => AssertTranslationFailed(() => base.Byte_array_Length(async));
+    public override async Task Random_Shared_Next_with_two_args(bool async)
+    {
+        await AssertTranslationFailed(() => base.Random_Shared_Next_with_two_args(async));
 
-    public override Task Byte_array_array_index(bool async)
-        => AssertTranslationFailed(() => base.Byte_array_array_index(async));
+        AssertSql();
+    }
 
-    public override Task Byte_array_First(bool async)
-        => AssertTranslationFailed(() => base.Byte_array_First(async));
+    public override async Task Random_new_Next_with_no_args(bool async)
+    {
+        await AssertTranslationFailed(() => base.Random_new_Next_with_no_args(async));
 
-    #endregion Byte array
+        AssertSql();
+    }
+
+    public override async Task Random_new_Next_with_one_arg(bool async)
+    {
+        await AssertTranslationFailed(() => base.Random_new_Next_with_one_arg(async));
+
+        AssertSql();
+    }
+
+    public override async Task Random_new_Next_with_two_args(bool async)
+    {
+        await AssertTranslationFailed(() => base.Random_new_Next_with_two_args(async));
+
+        AssertSql();
+    }
+
+    #endregion Random
 
     #region Convert
 

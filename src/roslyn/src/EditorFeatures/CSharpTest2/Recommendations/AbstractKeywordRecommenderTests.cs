@@ -30,9 +30,9 @@ namespace Microsoft.CodeAnalysis.Editor.CSharp.UnitTests.Recommendations
         }
 
         [Fact]
-        public async Task TestAfterGlobalStatement_Interactive()
+        public async Task TestAfterGlobalStatement()
         {
-            await VerifyKeywordAsync(SourceCodeKind.Script,
+            await VerifyKeywordAsync(
                 """
                 System.Console.WriteLine();
                 $$
@@ -483,6 +483,21 @@ namespace Microsoft.CodeAnalysis.Editor.CSharp.UnitTests.Recommendations
                 class C {
                     override $$
                 """);
+        }
+
+        [Fact]
+        public async Task TestWithinExtension()
+        {
+            await VerifyAbsenceAsync(
+                """
+                static class C
+                {
+                    extension(string s)
+                    {
+                        $$
+                    }
+                }
+                """, CSharpNextParseOptions);
         }
     }
 }

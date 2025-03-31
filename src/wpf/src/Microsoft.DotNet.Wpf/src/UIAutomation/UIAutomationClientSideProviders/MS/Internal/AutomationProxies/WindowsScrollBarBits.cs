@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -18,7 +18,7 @@ using MS.Win32;
 namespace MS.Internal.AutomationProxies
 {
     // Proxy for the up, down, large increment, large decrement and thumb piece of a scrollbar
-    class WindowsScrollBarBits: ProxySimple, IInvokeProvider
+    internal class WindowsScrollBarBits: ProxySimple, IInvokeProvider
     {
         // ------------------------------------------------------
         //
@@ -536,8 +536,10 @@ namespace MS.Internal.AutomationProxies
                     break;
             }
 
-            NativeMethods.ScrollInfo si = new NativeMethods.ScrollInfo ();
-            si.fMask = NativeMethods.SIF_ALL;
+            NativeMethods.ScrollInfo si = new NativeMethods.ScrollInfo
+            {
+                fMask = NativeMethods.SIF_ALL
+            };
             si.cbSize = Marshal.SizeOf (si.GetType ());
 
             if (!Misc.GetScrollInfo(_hwnd, _sbFlag, ref si))

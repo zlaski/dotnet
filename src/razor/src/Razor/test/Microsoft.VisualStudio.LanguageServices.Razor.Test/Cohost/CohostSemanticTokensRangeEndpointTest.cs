@@ -88,9 +88,34 @@ public class CohostSemanticTokensRangeEndpointTest(ITestOutputHelper testOutputH
         await VerifySemanticTokensAsync(input, colorBackground, precise, fileKind: FileKinds.Legacy);
     }
 
+    [Theory]
+    [CombinatorialData]
+    public async Task Legacy_Compatibility(bool colorBackground, bool precise)
+    {
+        // Same test as above, but with only the things that work in FUSE and non-FUSE, to prevent regressions
+
+        var input = """
+            @page "/"
+            @using System
+
+            <div>This is some HTML</div>
+
+            <component type="typeof(Component)" render-mode="ServerPrerendered" />
+
+            @functions
+            {
+                public void M()
+                {
+                }
+            }
+            """;
+
+        await VerifySemanticTokensAsync(input, colorBackground, precise, fileKind: FileKinds.Legacy);
+    }
+
     private async Task VerifySemanticTokensAsync(string input, bool colorBackground, bool precise, string? fileKind = null, [CallerMemberName] string? testName = null)
     {
-        var document = await CreateProjectAndRazorDocumentAsync(input, fileKind);
+        var document = CreateProjectAndRazorDocument(input, fileKind);
         var sourceText = await document.GetTextAsync(DisposalToken);
 
         var legend = TestRazorSemanticTokensLegendService.Instance;
@@ -193,7 +218,7 @@ public class CohostSemanticTokensRangeEndpointTest(ITestOutputHelper testOutputH
         var modifiersBuilder = ArrayBuilder<string>.GetInstance();
         for (var i = 0; i < modifiers.Length; i++)
         {
-            if ((tokenModifiers & (1 << i % 32)) != 0)
+            if ((tokenModifiers & (1 << (i % 32))) != 0)
             {
                 modifiersBuilder.Add(modifiers[i]);
             }
