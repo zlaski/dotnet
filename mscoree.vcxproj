@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AKITOOLS)\akibld\akibld.props" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B0BA104F-29F1-4515-8D63-513FD5121DE5}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="mscoree.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="mscoree-resources.h" />
+    <ClInclude Include="mscoree.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="mscoree.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="mscoree.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="mscoree.akibld.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(AKIROOT)\svn\akisystems\akilib\akilib.vcxproj">
+      <Project>{0A19BC1F-D9EA-4438-BA0D-2E42C97FC45D}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
