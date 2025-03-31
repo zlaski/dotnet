@@ -14,4 +14,10 @@
     <!-- Reset AssemblySearchPaths to empty to let Microsoft.Common.targets pick the legacy defaults -->
     <AssemblySearchPaths Condition="'$(UsingMicrosoftNETSdk)' != 'true'" />
   </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
 </Project>

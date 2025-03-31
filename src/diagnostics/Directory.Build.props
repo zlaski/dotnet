@@ -33,4 +33,10 @@
     <!-- this is the list of TFMs we build our unit tests as. -->
     <SupportedXUnitTestTargetFrameworks>net6.0;net8.0</SupportedXUnitTestTargetFrameworks>
   </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
 </Project>

@@ -11,4 +11,10 @@
     <IncludeSymbols Condition="'$(DebugType)' != 'embedded' and '$(UsingMicrosoftNoTargetsSdk)' != 'true'">true</IncludeSymbols>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
 </Project>
