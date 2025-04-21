@@ -62,4 +62,7 @@
 
   <Import Project="eng\testing\linker\trimmingTests.props" Condition="'$(IsPublishedAppTestProject)' == 'true'" />
 
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
 </Project>

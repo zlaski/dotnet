@@ -50,4 +50,16 @@
     <AspireDashboardDir>$(MSBuildThisFileDirectory)/artifacts/bin/Aspire.Dashboard/$(Configuration)/net8.0/</AspireDashboardDir>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
 </Project>

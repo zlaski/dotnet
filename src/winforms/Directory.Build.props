@@ -70,4 +70,7 @@
     <DisableImplicitNETCorePlatformsReference>true</DisableImplicitNETCorePlatformsReference>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
 </Project>

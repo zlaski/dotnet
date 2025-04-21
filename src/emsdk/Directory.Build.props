@@ -60,4 +60,16 @@
     <HostLLVMDir Condition="'$(BuildArchitecture)' != '$(TargetArchitecture)' or '$(PackageTargetOS)' != '$(PackageHostOS)'">$(BaseIntermediateOutputPath)\host\llvm\$(BuildArchitecture)</HostLLVMDir>
     <EmscriptenDir>$(ProjectDir)\emscripten\$(MajorVersion).$(MinorVersion).0</EmscriptenDir>
   </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
 </Project>

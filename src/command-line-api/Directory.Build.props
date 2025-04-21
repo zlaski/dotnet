@@ -18,4 +18,13 @@
     <TargetFrameworkForNETSDK>net8.0</TargetFrameworkForNETSDK>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1903;</NoWarn>
+  </PropertyGroup>
 </Project>

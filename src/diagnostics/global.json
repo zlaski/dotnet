@@ -1,14 +1,6 @@
 {
   "tools": {
-    "dotnet": "10.0.100-preview.3.25125.5",
-    "runtimes": {
-      "dotnet": [
-        "$(MicrosoftNETCoreApp80Version)"
-      ],
-      "dotnet/x86": [
-        "$(MicrosoftNETCoreApp80Version)"
-      ]
-    }
+    "dotnet": "10.0.100-preview.4.25177.22"
   },
   "msbuild-sdks": {
     "Microsoft.Build.NoTargets": "3.5.0",
